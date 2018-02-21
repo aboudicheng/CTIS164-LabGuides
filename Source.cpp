@@ -40,11 +40,15 @@ int  winWidth, winHeight; // current Window width and height
 //variables for timer
 int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
 
+//variables for competitors
+int p1 = 1, p2 = 2, p3 = 3, p4 = 4, p5 = 5;
+int winner;
+
 //set default state as START
 int state = START;
 
 //variables for motion
-int ax = 0, bx = 0, cx = 0, dx = 0;
+int ax = 0, bx = 0, cx = 0, dx = 0, ex = 0;
 
 void onTimer(int v);
 
@@ -146,14 +150,98 @@ void displayBackground() {
 	//Name
 	glColor3ub(250, 0, 255);
 	print(-150, 245, "Racing Animation by Ping Cheng", GLUT_BITMAP_9_BY_15);
+
+	//Racing background
+	glColor3ub(216, 17, 53);
+	glRectf(-400, -300, 400, 180);
+
+	//Lines
+	glPointSize(50);
+	glColor3ub(250, 0, 255);
+	glBegin(GL_LINES);
+	for (int i = 96; i <= 384; i += 96) {
+		glVertex2f(-400, 180 - i);
+		glVertex2f(400, 180 - i);
+	}
+	glEnd();
 }
 
 void displayTime() {
 	glColor3f(0, 1, 0);
 	vprint(-320, 220, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", min2, min1, sec2, sec1, msec2, msec1);
 }
-void displayWinner(){
 
+void displayObjects() {
+	glColor3ub(99, 85, 85);
+
+	//object 1
+	if (ax < 720)
+		circle(-360 + ax, 130, 40);
+	else if (ax >= 1440) {
+		circle(-360, 130, 40);
+		state = END;
+	}
+	else if (ax >= 720)
+		circle(360 - ax + 720, 130, 40);
+
+	//object 2
+	if (bx < 720)
+		circle(-360 + bx, 34, 40);
+	else if (bx >= 1440) {
+		circle(-360, 34, 40);
+		state = END;
+	}
+	else if (bx >= 720)
+		circle(360 - bx + 720, 34, 40);
+
+	//object 3
+	if (cx < 720)
+		circle(-360 + cx, -62, 40);
+	else if (cx >= 1440) {
+		circle(-360, -62, 40);
+		state = END;
+	}
+	else if (cx >= 720)
+		circle(360 - cx + 720, -62, 40);
+
+	//object 4
+	if (dx < 720)
+		circle(-360 + dx, -158, 40);
+	else if (dx >= 1440) {
+		circle(-360, -158, 40);
+		state = END;
+	}
+	else if (dx >= 720)
+		circle(360 - dx + 720, -158, 40);
+
+	//object 5
+	if (ex < 720)
+		circle(-360 + ex, -254, 40);
+	else if (ex >= 1440) {
+		circle(-360, -254, 40);
+		state = END;
+	}
+	else if (ex >= 720)
+		circle(360 - ex + 720, -254, 40);
+	
+}	
+
+void displayWinner(){
+	if (state != START) {
+		if (ax > bx && ax > cx && ax > dx && ax > ex)
+			winner = p1;
+		else if (bx > ax && bx > cx && bx > dx && bx > ex)
+			winner = p2;
+		else if (cx > ax && cx > bx && cx > dx && cx > ex)
+			winner = p3;
+		else if (dx > ax && dx > bx && dx > cx && dx > ex)
+			winner = p4;
+		else if (ex > ax && ex > bx && ex > cx && ex > dx)
+			winner = p5;
+
+		glColor3f(1, 1, 1);
+		vprint(260, 220, GLUT_BITMAP_9_BY_15, "P%d", winner);
+	}
 }
 
 void displayPress() {
@@ -183,6 +271,8 @@ void display() {
 	displayBackground();
 	displayTime();
 	displayPress();
+	displayObjects();
+	displayWinner();
 
 	glutSwapBuffers();
 
@@ -315,10 +405,11 @@ void onTimer(int v) {
 	glutTimerFunc(TIMER_PERIOD, onTimer, 0);
 	// Write your codes here.
 	if (state == START) {
-		min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
+		min1 = min2 = sec1 = sec2 = msec1 = msec2 = 0;
+		ax = bx = cx = dx = ex = 0;
 	}
 	if (state == RUN) {
-		if (msec1 == 10) {
+		if (msec1 == 9) {
 			msec1 = 0;
 			msec2++;
 			if (msec2 == 10) {
@@ -339,6 +430,12 @@ void onTimer(int v) {
 			min2++;
 		}
 		msec1++;
+
+		ax += rand() % 3;
+		bx += rand() % 3;
+		cx += rand() % 3;
+		dx += rand() % 3;
+		ex += rand() % 3;
 	}
 
 	// to refresh the window it calls display() function
@@ -359,7 +456,7 @@ void main(int argc, char *argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Template File");
+	glutCreateWindow("Ping Cheng - HW1");
 
 	glutDisplayFunc(display);
 	glutReshapeFunc(onResize);
