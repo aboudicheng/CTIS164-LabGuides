@@ -39,7 +39,8 @@ int  winWidth, winHeight; // current Window width and height
 						  //
 //variables for timer
 int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
-
+int win;
+int diff = 96;
 //variables for competitors
 int p1 = 1, p2 = 2, p3 = 3, p4 = 4, p5 = 5;
 int winner;
@@ -156,10 +157,10 @@ void displayBackground() {
 	glRectf(-400, -300, 400, 180);
 
 	//Lines
-	glPointSize(50);
-	glColor3ub(250, 0, 255);
+	glLineWidth(5);
+	glColor3ub(255, 255, 255);
 	glBegin(GL_LINES);
-	for (int i = 96; i <= 384; i += 96) {
+	for (int i = diff; i <= 4 * diff; i += diff) {
 		glVertex2f(-400, 180 - i);
 		glVertex2f(400, 180 - i);
 	}
@@ -172,62 +173,621 @@ void displayTime() {
 }
 
 void displayObjects() {
-	glColor3ub(99, 85, 85);
-
 	//object 1
-	if (ax < 720)
-		circle(-360 + ax, 130, 40);
-	else if (ax >= 1440) {
-		circle(-360, 130, 40);
-		state = END;
+	if (ax < 700) {
+		glColor3ub(57, 148, 219);
+		//car's front & back
+		circle(-380 + ax, 140, 20);
+		circle(-320 + ax, 140, 20);
+
+		glRectf(-380 + ax, 120, -320 + ax, 160);
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355 + ax, 135, GLUT_BITMAP_HELVETICA_12, "P%d", p1);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-380 + ax, 160);
+		glVertex2f(-380 + ax, 170);
+		glEnd();
+
+		circle(-385 + ax, 170, 5);
+		circle(-375 + ax, 170, 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-385 + ax, 170, 2);
+		circle(-375 + ax, 170, 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372 + ax, 115, 15);
+		circle(-328 + ax, 115, 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372 + ax, 115, 5);
+		circle(-328 + ax, 115, 5);
+		
 	}
-	else if (ax >= 720)
-		circle(360 - ax + 720, 130, 40);
+	else if (ax >= 1400) {
+		glColor3ub(57, 148, 219);
+		//car's front & back
+		circle(-380, 140, 20);
+		circle(-320, 140, 20);
+
+		glRectf(-380, 120, -320, 160);
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355, 135, GLUT_BITMAP_HELVETICA_12, "P%d", p1);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-320, 160);
+		glVertex2f(-320, 170);
+		glEnd();
+
+		circle(-325, 170, 5);
+		circle(-315, 170, 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-325, 170, 2);
+		circle(-315, 170, 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372, 115, 15);
+		circle(-328, 115, 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372, 115, 5);
+		circle(-328, 115, 5);
+		if (state == RUN)
+			state = END;
+	}
+	else if (ax >= 700) {
+		glColor3ub(57, 148, 219);
+		//car's front & back
+		circle(380 - ax + 700, 140, 20);
+		circle(320 - ax + 700, 140, 20);
+
+		glRectf(380 - ax + 700, 120, 320 - ax + 700, 160);
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(345 - ax + 700, 135, GLUT_BITMAP_HELVETICA_12, "P%d", p1);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(380 - ax + 700, 160);
+		glVertex2f(380 - ax + 700, 170);
+		glEnd();
+
+		circle(385 - ax + 700, 170, 5);
+		circle(375 - ax + 700, 170, 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(385 - ax + 700, 170, 2);
+		circle(375 - ax + 700, 170, 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(372 - ax + 700, 115, 15);
+		circle(328 - ax + 700, 115, 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(372 - ax + 700, 115, 5);
+		circle(328 - ax + 700, 115, 5);
+		
+	}
 
 	//object 2
-	if (bx < 720)
-		circle(-360 + bx, 34, 40);
-	else if (bx >= 1440) {
-		circle(-360, 34, 40);
-		state = END;
+	if (bx < 700) {
+		glColor3ub(57, 219, 75);
+		//car's front & back
+		circle(-380 + bx, 140 - (p1 * diff), 20);
+		circle(-320 + bx, 140 - (p1 * diff), 20);
+
+		glRectf(-380 + bx, 120 - (p1 * diff), -320 + bx, 160 - (p1 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355 + bx, 135 - (p1 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p2);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-380 + bx, 160 - (p1 * diff));
+		glVertex2f(-380 + bx, 170 - (p1 * diff));
+		glEnd();
+
+		circle(-385 + bx, 170 - (p1 * diff), 5);
+		circle(-375 + bx, 170 - (p1 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-385 + bx, 170 - (p1 * diff), 2);
+		circle(-375 + bx, 170 - (p1 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372 + bx, 115 - (p1 * diff), 15);
+		circle(-328 + bx, 115 - (p1 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372 + bx, 115 - (p1 * diff), 5);
+		circle(-328 + bx, 115 - (p1 * diff), 5);
+
 	}
-	else if (bx >= 720)
-		circle(360 - bx + 720, 34, 40);
+	else if (bx >= 1400) {
+		glColor3ub(57, 219, 75);
+		//car's front & back
+		circle(-380, 140 - (p1 * diff), 20);
+		circle(-320, 140 - (p1 * diff), 20);
+
+		glRectf(-380, 120 - (p1 * diff), -320, 160 - (p1 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355, 135 - (p1 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p2);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-320, 160 - (p1 * diff));
+		glVertex2f(-320, 170 - (p1 * diff));
+		glEnd();
+
+		circle(-325, 170 - (p1 * diff), 5);
+		circle(-315, 170 - (p1 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-325, 170 - (p1 * diff), 2);
+		circle(-315, 170 - (p1 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372, 115 - (p1 * diff), 15);
+		circle(-328, 115 - (p1 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372, 115 - (p1 * diff), 5);
+		circle(-328, 115 - (p1 * diff), 5);
+		if (state == RUN)
+			state = END;
+	}
+	else if (bx >= 700) {
+		glColor3ub(57, 219, 75);
+		//car's front & back
+		circle(380 - bx + 700, 140 - (p1 * diff), 20);
+		circle(320 - bx + 700, 140 - (p1 * diff), 20);
+
+		glRectf(380 - bx + 700, 120 - (p1 * diff), 320 - bx + 700, 160 - (p1 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(345 - bx + 700, 135 - (p1 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p2);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(380 - bx + 700, 160 - (p1 * diff));
+		glVertex2f(380 - bx + 700, 170 - (p1 * diff));
+		glEnd();
+
+		circle(385 - bx + 700, 170 - (p1 * diff), 5);
+		circle(375 - bx + 700, 170 - (p1 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(385 - bx + 700, 170 - (p1 * diff), 2);
+		circle(375 - bx + 700, 170 - (p1 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(372 - bx + 700, 115 - (p1 * diff), 15);
+		circle(328 - bx + 700, 115 - (p1 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(372 - bx + 700, 115 - (p1 * diff), 5);
+		circle(328 - bx + 700, 115 - (p1 * diff), 5);
+
+	}
 
 	//object 3
-	if (cx < 720)
-		circle(-360 + cx, -62, 40);
-	else if (cx >= 1440) {
-		circle(-360, -62, 40);
-		state = END;
+	if (cx < 700) {
+		glColor3ub(213, 219, 57);
+		//car's front & back
+		circle(-380 + cx, 140 - (p2 * diff), 20);
+		circle(-320 + cx, 140 - (p2 * diff), 20);
+
+		glRectf(-380 + cx, 120 - (p2 * diff), -320 + cx, 160 - (p2 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355 + cx, 135 - (p2 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p3);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-380 + cx, 160 - (p2 * diff));
+		glVertex2f(-380 + cx, 170 - (p2 * diff));
+		glEnd();
+
+		circle(-385 + cx, 170 - (p2 * diff), 5);
+		circle(-375 + cx, 170 - (p2 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-385 + cx, 170 - (p2 * diff), 2);
+		circle(-375 + cx, 170 - (p2 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372 + cx, 115 - (p2 * diff), 15);
+		circle(-328 + cx, 115 - (p2 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372 + cx, 115 - (p2 * diff), 5);
+		circle(-328 + cx, 115 - (p2 * diff), 5);
+
 	}
-	else if (cx >= 720)
-		circle(360 - cx + 720, -62, 40);
+	else if (cx >= 1400) {
+		glColor3ub(213, 219, 57);
+		//car's front & back
+		circle(-380, 140 - (p2 * diff), 20);
+		circle(-320, 140 - (p2 * diff), 20);
+
+		glRectf(-380, 120 - (p2 * diff), -320, 160 - (p2 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355, 135 - (p2 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p3);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-320, 160 - (p2 * diff));
+		glVertex2f(-320, 170 - (p2 * diff));
+		glEnd();
+
+		circle(-325, 170 - (p2 * diff), 5);
+		circle(-315, 170 - (p2 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-325, 170 - (p2 * diff), 2);
+		circle(-315, 170 - (p2 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372, 115 - (p2 * diff), 15);
+		circle(-328, 115 - (p2 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372, 115 - (p2 * diff), 5);
+		circle(-328, 115 - (p2 * diff), 5);
+		if (state == RUN)
+			state = END;
+	}
+	else if (cx >= 700) {
+		glColor3ub(213, 219, 57);
+		//car's front & back
+		circle(380 - cx + 700, 140 - (p2 * diff), 20);
+		circle(320 - cx + 700, 140 - (p2 * diff), 20);
+
+		glRectf(380 - cx + 700, 120 - (p2 * diff), 320 - cx + 700, 160 - (p2 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(345 - cx + 700, 135 - (p2 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p3);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(380 - cx + 700, 160 - (p2 * diff));
+		glVertex2f(380 - cx + 700, 170 - (p2 * diff));
+		glEnd();
+
+		circle(385 - cx + 700, 170 - (p2 * diff), 5);
+		circle(375 - cx + 700, 170 - (p2 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(385 - cx + 700, 170 - (p2 * diff), 2);
+		circle(375 - cx + 700, 170 - (p2 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(372 - cx + 700, 115 - (p2 * diff), 15);
+		circle(328 - cx + 700, 115 - (p2 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(372 - cx + 700, 115 - (p2 * diff), 5);
+		circle(328 - cx + 700, 115 - (p2 * diff), 5);
+
+	}
 
 	//object 4
-	if (dx < 720)
-		circle(-360 + dx, -158, 40);
-	else if (dx >= 1440) {
-		circle(-360, -158, 40);
-		state = END;
+	if (dx < 700) {
+		glColor3ub(217, 57, 219);
+		//car's front & back
+		circle(-380 + dx, 140 - (p3 * diff), 20);
+		circle(-320 + dx, 140 - (p3 * diff), 20);
+
+		glRectf(-380 + dx, 120 - (p3 * diff), -320 + dx, 160 - (p3 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355 + dx, 135 - (p3 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p4);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-380 + dx, 160 - (p3 * diff));
+		glVertex2f(-380 + dx, 170 - (p3 * diff));
+		glEnd();
+
+		circle(-385 + dx, 170 - (p3 * diff), 5);
+		circle(-375 + dx, 170 - (p3 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-385 + dx, 170 - (p3 * diff), 2);
+		circle(-375 + dx, 170 - (p3 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372 + dx, 115 - (p3 * diff), 15);
+		circle(-328 + dx, 115 - (p3 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372 + dx, 115 - (p3 * diff), 5);
+		circle(-328 + dx, 115 - (p3 * diff), 5);
+
 	}
-	else if (dx >= 720)
-		circle(360 - dx + 720, -158, 40);
+	else if (dx >= 1400) {
+		glColor3ub(217, 57, 219);
+		//car's front & back
+		circle(-380, 140 - (p3 * diff), 20);
+		circle(-320, 140 - (p3 * diff), 20);
+
+		glRectf(-380, 120 - (p3 * diff), -320, 160 - (p3 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355, 135 - (p3 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p4);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-320, 160 - (p3 * diff));
+		glVertex2f(-320, 170 - (p3 * diff));
+		glEnd();
+
+		circle(-325, 170 - (p3 * diff), 5);
+		circle(-315, 170 - (p3 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-325, 170 - (p3 * diff), 2);
+		circle(-315, 170 - (p3 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372, 115 - (p3 * diff), 15);
+		circle(-328, 115 - (p3 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372, 115 - (p3 * diff), 5);
+		circle(-328, 115 - (p3 * diff), 5);
+		if (state == RUN)
+			state = END;
+	}
+	else if (dx >= 700) {
+		glColor3ub(217, 57, 219);
+		//car's front & back
+		circle(380 - dx + 700, 140 - (p3 * diff), 20);
+		circle(320 - dx + 700, 140 - (p3 * diff), 20);
+
+		glRectf(380 - dx + 700, 120 - (p3 * diff), 320 - dx + 700, 160 - (p3 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(345 - dx + 700, 135 - (p3 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p4);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(380 - dx + 700, 160 - (p3 * diff));
+		glVertex2f(380 - dx + 700, 170 - (p3 * diff));
+		glEnd();
+
+		circle(385 - dx + 700, 170 - (p3 * diff), 5);
+		circle(375 - dx + 700, 170 - (p3 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(385 - dx + 700, 170 - (p3 * diff), 2);
+		circle(375 - dx + 700, 170 - (p3 * diff), 2);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(380 - cx + 700, 160 - (p2 * diff));
+		glVertex2f(380 - cx + 700, 170 - (p2 * diff));
+		glEnd();
+
+		circle(385 - cx + 700, 170 - (p2 * diff), 5);
+		circle(375 - cx + 700, 170 - (p2 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(385 - cx + 700, 170 - (p2 * diff), 2);
+		circle(375 - cx + 700, 170 - (p2 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(372 - dx + 700, 115 - (p3 * diff), 15);
+		circle(328 - dx + 700, 115 - (p3 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(372 - dx + 700, 115 - (p3 * diff), 5);
+		circle(328 - dx + 700, 115 - (p3 * diff), 5);
+
+	}
 
 	//object 5
-	if (ex < 720)
-		circle(-360 + ex, -254, 40);
-	else if (ex >= 1440) {
-		circle(-360, -254, 40);
-		state = END;
+	if (ex < 700) {
+		glColor3ub(255, 93, 0);
+		//car's front & back
+		circle(-380 + ex, 140 - (p4 * diff), 20);
+		circle(-320 + ex, 140 - (p4 * diff), 20);
+
+		glRectf(-380 + ex, 120 - (p4 * diff), -320 + ex, 160 - (p4 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355 + ex, 135 - (p4 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p5);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-380 + ex, 160 - (p4 * diff));
+		glVertex2f(-380 + ex, 170 - (p4 * diff));
+		glEnd();
+
+		circle(-385 + ex, 170 - (p4 * diff), 5);
+		circle(-375 + ex, 170 - (p4 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-385 + ex, 170 - (p4 * diff), 2);
+		circle(-375 + ex, 170 - (p4 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372 + ex, 115 - (p4 * diff), 15);
+		circle(-328 + ex, 115 - (p4 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372 + ex, 115 - (p4 * diff), 5);
+		circle(-328 + ex, 115 - (p4 * diff), 5);
+
 	}
-	else if (ex >= 720)
-		circle(360 - ex + 720, -254, 40);
-	
+	else if (ex >= 1400) {
+		glColor3ub(255, 93, 0);
+		//car's front & back
+		circle(-380, 140 - (p4 * diff), 20);
+		circle(-320, 140 - (p4 * diff), 20);
+
+		glRectf(-380, 120 - (p4 * diff), -320, 160 - (p4 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(-355, 135 - (p4 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p5);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(-320, 160 - (p4 * diff));
+		glVertex2f(-320, 170 - (p4 * diff));
+		glEnd();
+
+		circle(-325, 170 - (p4 * diff), 5);
+		circle(-315, 170 - (p4 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(-325, 170 - (p4 * diff), 2);
+		circle(-315, 170 - (p4 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(-372, 115 - (p4 * diff), 15);
+		circle(-328, 115 - (p4 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(-372, 115 - (p4 * diff), 5);
+		circle(-328, 115 - (p4 * diff), 5);
+		if (state == RUN)
+			state = END;
+	}
+	else if (ex >= 700) {
+		glColor3ub(255, 93, 0);
+		//car's front & back
+		circle(380 - ex + 700, 140 - (p4 * diff), 20);
+		circle(320 - ex + 700, 140 - (p4 * diff), 20);
+
+		glRectf(380 - ex + 700, 120 - (p4 * diff), 320 - ex + 700, 160 - (p4 * diff));
+
+		//player number
+		glColor3f(1, 1, 1);
+		vprint(345 - ex + 700, 135 - (p4 * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p5);
+
+		//tail
+		glColor3f(0, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2f(380 - ex + 700, 160 - (p4 * diff));
+		glVertex2f(380 - ex + 700, 170 - (p4 * diff));
+		glEnd();
+
+		circle(385 - ex + 700, 170 - (p4 * diff), 5);
+		circle(375 - ex + 700, 170 - (p4 * diff), 5);
+
+		//tail hole
+		glColor3ub(216, 17, 53);
+		circle(385 - ex + 700, 170 - (p4 * diff), 2);
+		circle(375 - ex + 700, 170 - (p4 * diff), 2);
+
+		//tires
+		glColor3f(0.1, 0.1, 0.1);
+		circle(372 - ex + 700, 115 - (p4 * diff), 15);
+		circle(328 - ex + 700, 115 - (p4 * diff), 15);
+		//center of tires
+		glColor3f(1, 1, 1);
+		circle(372 - ex + 700, 115 - (p4 * diff), 5);
+		circle(328 - ex + 700, 115 - (p4 * diff), 5);
+
+	}
+
 }	
 
 void displayWinner(){
-	if (state != START) {
+	//make change on winner when it is ended
+	if (state == END) {
+		glColor3f(0, 1, 0);
+		
+		//make winner appear and disappear
+		if (win < 50) {
+			vprint(275, 220, GLUT_BITMAP_TIMES_ROMAN_24, "P%d", winner);
+		}
+	}
+	//show winner during the race
+	if (state != START && state != END) {
 		if (ax > bx && ax > cx && ax > dx && ax > ex)
 			winner = p1;
 		else if (bx > ax && bx > cx && bx > dx && bx > ex)
@@ -239,8 +799,8 @@ void displayWinner(){
 		else if (ex > ax && ex > bx && ex > cx && ex > dx)
 			winner = p5;
 
-		glColor3f(1, 1, 1);
-		vprint(260, 220, GLUT_BITMAP_9_BY_15, "P%d", winner);
+		glColor3f(0, 1, 0);
+		vprint(275, 220, GLUT_BITMAP_TIMES_ROMAN_24, "P%d", winner);
 	}
 }
 
@@ -292,6 +852,7 @@ void onKeyDown(unsigned char key, int x, int y)
 		state = STOP;
 	else if (state == STOP && key == ' ')
 		state = RUN;
+
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
 }
@@ -314,10 +875,6 @@ void onSpecialKeyDown(int key, int x, int y)
 {
 	// Write your codes here.
 	switch (key) {
-	case GLUT_KEY_UP: up = true; break;
-	case GLUT_KEY_DOWN: down = true; break;
-	case GLUT_KEY_LEFT: left = true; break;
-	case GLUT_KEY_RIGHT: right = true; break;
 	case GLUT_KEY_F1: state = START; break;
 	}
 
@@ -436,6 +993,12 @@ void onTimer(int v) {
 		cx += rand() % 3;
 		dx += rand() % 3;
 		ex += rand() % 3;
+	}
+
+	if (state == END) {
+		win++;
+		if (win == 100)
+			win = 0;
 	}
 
 	// to refresh the window it calls display() function
