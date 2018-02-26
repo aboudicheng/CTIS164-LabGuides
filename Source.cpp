@@ -175,7 +175,6 @@ void displayTime() {
 }
 
 void displayObj(int x[], int p) {
-	//object 2
 	if (x[p - 1] < 700) {
 
 		//car's front & back
@@ -406,9 +405,10 @@ void onSpecialKeyDown(int key, int z, int y)
 {
 	// Write your codes here.
 	switch (key) {
+	//restart
 	case GLUT_KEY_F1: state = START; break;
+	//accelerate
 	case GLUT_KEY_RIGHT: if (state == RUN) { for (int i = 0; i < 5; i++) { x[i] += 5; } } break;
-
 	}
 
 	// to refresh the window it calls display() function
@@ -495,6 +495,7 @@ void onTimer(int v) {
 	glutTimerFunc(TIMER_PERIOD, onTimer, 0);
 	// Write your codes here.
 	if (state == START) {
+		//initialize
 		min1 = min2 = sec1 = sec2 = msec1 = msec2 = 0;
 		for (int i = 0; i < 5; i++)
 			x[i] = 0;
