@@ -189,6 +189,7 @@ void displayTime() {
 }
 
 void displayObj(int x[], int p) {
+	//when the objects are moving right
 	if (x[p - 1] < 700) {
 
 		//car's front & back
@@ -236,6 +237,7 @@ void displayObj(int x[], int p) {
 		circle(-328 + x[p - 1], 115 - ((p - 1) * diff), 5);
 
 	}
+	//when an object wins
 	else if (x[p - 1] >= 1400) {
 		//car's front & back
 		circle(-380, 140 - ((p - 1) * diff), 20);
@@ -283,6 +285,7 @@ void displayObj(int x[], int p) {
 		if (state == RUN)
 			state = END;
 	}
+	//when the objects are moving back
 	else if (x[p - 1] >= 700) {
 		//car's front & back
 		circle(380 - x[p - 1] + 700, 140 - ((p - 1) * diff), 20);
