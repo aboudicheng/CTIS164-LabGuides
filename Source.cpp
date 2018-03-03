@@ -155,7 +155,7 @@ void displayBackground() {
 	print(-150, 245, "Racing Animation by Ping Cheng", GLUT_BITMAP_9_BY_15);
 
 	//Racing background
-	glColor3ub(216, 17, 53);
+	glColor3ub(117, 97, 97);
 	glRectf(-400, -300, 400, 180);
 
 	//Lines
@@ -165,6 +165,20 @@ void displayBackground() {
 	for (int i = diff; i <= 4 * diff; i += diff) {
 		glVertex2f(-400, 180 - i);
 		glVertex2f(400, 180 - i);
+	}
+	glEnd();
+
+	//dotted lines
+	glLineWidth(20);
+	glColor3ub(255, 255, 255);
+	glBegin(GL_LINES);
+	for (int i = diff; i <= 5 * diff; i += diff) {
+		for (int j = 0; j <= 400; j += 40) {
+			glVertex2f(-380 + j * 3, 228 - i);
+			glVertex2f(-340 + j * 3, 228 - i);
+		}
+
+		
 	}
 	glEnd();
 }
@@ -183,6 +197,15 @@ void displayObj(int x[], int p) {
 
 		glRectf(-380 + x[p - 1], 120 - ((p - 1) * diff), -320 + x[p - 1], 160 - ((p - 1) * diff));
 
+		//car's front glass
+		glColor3ub(160, 247, 244);
+		glBegin(GL_QUADS);
+		glVertex2f(-305 + x[p - 1], 155 - ((p - 1) * diff));
+		glVertex2f(-310 + x[p - 1], 170 - ((p - 1) * diff));
+		glVertex2f(-330 + x[p - 1], 170 - ((p - 1) * diff));
+		glVertex2f(-325 + x[p - 1], 155 - ((p - 1) * diff));
+		glEnd();
+
 		//player number
 		glColor3f(1, 1, 1);
 		vprint(-355 + x[p - 1], 135 - ((p - 1) * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p);
@@ -199,7 +222,7 @@ void displayObj(int x[], int p) {
 		circle(-375 + x[p - 1], 170 - ((p - 1) * diff), 5);
 
 		//tail hole
-		glColor3ub(216, 17, 53);
+		glColor3ub(117, 97, 97);
 		circle(-385 + x[p - 1], 170 - ((p - 1) * diff), 2);
 		circle(-375 + x[p - 1], 170 - ((p - 1) * diff), 2);
 
@@ -220,6 +243,15 @@ void displayObj(int x[], int p) {
 
 		glRectf(-380, 120 - ((p - 1) * diff), -320, 160 - ((p - 1) * diff));
 
+		//car's front glass
+		glColor3ub(160, 247, 244);
+		glBegin(GL_QUADS);
+		glVertex2f(-395, 155 - ((p - 1) * diff));
+		glVertex2f(-390, 170 - ((p - 1) * diff));
+		glVertex2f(-370, 170 - ((p - 1) * diff));
+		glVertex2f(-375, 155 - ((p - 1) * diff));
+		glEnd();
+
 		//player number
 		glColor3f(1, 1, 1);
 		vprint(-355, 135 - ((p - 1) * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p);
@@ -236,7 +268,7 @@ void displayObj(int x[], int p) {
 		circle(-315, 170 - ((p - 1) * diff), 5);
 
 		//tail hole
-		glColor3ub(216, 17, 53);
+		glColor3ub(117, 97, 97);
 		circle(-325, 170 - ((p - 1) * diff), 2);
 		circle(-315, 170 - ((p - 1) * diff), 2);
 
@@ -258,6 +290,15 @@ void displayObj(int x[], int p) {
 
 		glRectf(380 - x[p - 1] + 700, 120 - ((p - 1) * diff), 320 - x[p - 1] + 700, 160 - ((p - 1) * diff));
 
+		//car's front glass
+		glColor3ub(160, 247, 244);
+		glBegin(GL_QUADS);
+		glVertex2f(305 - x[p - 1] + 700, 155 - ((p - 1) * diff));
+		glVertex2f(310 - x[p - 1] + 700, 170 - ((p - 1) * diff));
+		glVertex2f(330 - x[p - 1] + 700, 170 - ((p - 1) * diff));
+		glVertex2f(325 - x[p - 1] + 700, 155 - ((p - 1) * diff));
+		glEnd();
+
 		//player number
 		glColor3f(1, 1, 1);
 		vprint(345 - x[p - 1] + 700, 135 - ((p - 1) * diff), GLUT_BITMAP_HELVETICA_12, "P%d", p);
@@ -274,7 +315,7 @@ void displayObj(int x[], int p) {
 		circle(375 - x[p - 1] + 700, 170 - ((p - 1) * diff), 5);
 
 		//tail hole
-		glColor3ub(216, 17, 53);
+		glColor3ub(117, 97, 97);
 		circle(385 - x[p - 1] + 700, 170 - ((p - 1) * diff), 2);
 		circle(375 - x[p - 1] + 700, 170 - ((p - 1) * diff), 2);
 
@@ -405,9 +446,9 @@ void onSpecialKeyDown(int key, int z, int y)
 {
 	// Write your codes here.
 	switch (key) {
-	//restart
+		//restart
 	case GLUT_KEY_F1: state = START; break;
-	//accelerate
+		//accelerate
 	case GLUT_KEY_RIGHT: if (state == RUN) { for (int i = 0; i < 5; i++) { x[i] += 5; } } break;
 	}
 
