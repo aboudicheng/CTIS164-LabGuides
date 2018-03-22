@@ -28,7 +28,6 @@ explain here which parts are not running.
 #define FIN 0
 #define RUN 1
 #define STOP 2
-#define CON 3
 
 typedef struct {
 	int x;
@@ -45,7 +44,9 @@ int kunaiX = 0, kunaiY = 0;
 int ninjaY = 0;
 
 int ranDevil = 0;
-int dev = 180;
+int totalDevil = 0;
+int hitDevil = 0;
+int totalPoints = 0;
 devil_t d[5];
 
 bool shoot = false;
@@ -139,41 +140,41 @@ void vprint2(int x, int y, float size, char *string, ...) {
 void displayBackground() {
 	//time
 	glColor3f(1, 1, 1);
-	vprint(-310, 250, GLUT_BITMAP_9_BY_15, "TIME");
-	vprint(240, 250, GLUT_BITMAP_9_BY_15, "TOTAL POINTS");
+	vprint(-310, -250, GLUT_BITMAP_9_BY_15, "TIME");
+	vprint(240, -250, GLUT_BITMAP_9_BY_15, "TOTAL POINTS");
 
-	//Top rectangle
+	//rectangle
 	glColor3ub(19, 242, 201);
-	glRectf(-200, 230, 200, 270);
+	glRectf(-200, -230, 200, -270);
 	glBegin(GL_LINE_LOOP);
-	glVertex2f(-210, 280);
-	glVertex2f(-210, 220);
+	glVertex2f(-210, -280);
+	glVertex2f(-210, -220);
 
-	glVertex2f(210, 220);
-	glVertex2f(210, 280);
+	glVertex2f(210, -220);
+	glVertex2f(210, -280);
 
 	glEnd();
 	
 
 	//Name
 	glColor3ub(250, 0, 255);
-	print(-150, 245, "Hit the Target by Ping Cheng", GLUT_BITMAP_9_BY_15);
+	print(-140, -255, "Hit the Target by Ping Cheng", GLUT_BITMAP_9_BY_15);
 
 	//background
 	glBegin(GL_QUADS);
 	glColor3ub(117, 97, 97);
-	glVertex2f(400, 185);
-	glVertex2f(-400, 185);
+	glVertex2f(400, 400);
+	glVertex2f(-400, 400);
 	glColor3ub(31, 221, 145);
-	glVertex2f(-400, -300);
-	glVertex2f(400, -300);
+	glVertex2f(-400, -200);
+	glVertex2f(400, -200);
 	glEnd();
 
 }
 
 void displayTime() {
 	glColor3f(0, 1, 0);
-	vprint(-320, 220, GLUT_BITMAP_9_BY_15, "%d%d:%d%d", sec2, sec1, msec2, msec1);
+	vprint(-315, -280, GLUT_BITMAP_9_BY_15, "%d%d:%d%d", sec2, sec1, msec2, msec1);
 }
 
 void ninja() {
@@ -301,7 +302,7 @@ void display() {
 
 	displayBackground();
 	displayTime();
-	scoreboard();
+	//scoreboard();
 	ninja();
 
 	if (!shoot)
@@ -310,11 +311,23 @@ void display() {
 		kunai();
 
 	
-	for (int i = 0; i < 5; i++) {
-		d[i].x = rand() % (351 - 50) + 50;
-		d[i].y = 180 + i * 70;
-		devil(d[i].x, d[i].y);
+	if (state != FIN) {
+		for (int i = 0; i < 5; i++) {
+			if ((kunaiX <= d[i].x && kunaiX >= d[i].x + 50) && (kunaiY <= d[i].y && kunaiY >= d[i].y - 40))
+				totalPoints++;
+			else {
+				devil(d[i].x, d[i].y);
+			}
+		}
 	}
+
+	glColor3f(0.8, 0.8, 0);
+	vprint(0, 0, GLUT_BITMAP_HELVETICA_18, "%d", totalDevil);
+	if (state == FIN)
+		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "Press <F1> to start a new game");
+	else
+		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "<Spacebar> Throw, <F1> Pause / Restart");
+	
 
 
 
@@ -357,10 +370,19 @@ void onSpecialKeyDown(int key, int x, int y)
 	switch (key) {
 	case GLUT_KEY_F1:
 		if (state == FIN) {
+			//initialize ninja
 			ninjaY = 0;
+			//initialize kunai
 			kunaiX = kunaiY = 0;
-			state = RUN;
+			//initialize devils
+			for (int i = 0; i < 5; i++) {
+				d[i].x = rand() % (351 - 50) + 50;
+				d[i].y = 340 + i * 100;
+			}
+			//set time starting from 20 sec
 			sec2 = 2;
+			//change state
+			state = RUN;
 			activeTimer = true;
 		}
 		else if (state == RUN) {
@@ -505,17 +527,17 @@ void onTimer(int v) {
 		if (state == RUN) {
 
 			for (int i = 0; i < 5; i++) {
-				if (d[i].y == -175) {
+				if (d[i].y == -160) {
 					d[i].x = rand() % (351 - 50) + 50;
-					d[i].y = 180;
-				}
-				d[i].y--;
-			}
+					d[i].y = 340;
 
+					totalDevil++;
+				}
+				d[i].y -= 2;
+			}
 		}
 		
 	}
-
 
 
 	// to refresh the window it calls display() function
