@@ -323,9 +323,9 @@ void display() {
 	displayTime();
 	ninja();
 
-	if (!shoot || state == FIN)
+	if (!shoot || !activeTimer)
 		kunaiY = ninjaY;
-	//if (shoot && state != FIN)
+
 		kunai();
 
 	
@@ -445,11 +445,11 @@ void onSpecialKeyDown(int key, int x, int y)
 		}
 		break;
 	case GLUT_KEY_UP:
-		if (ninjaY < 155 && activeTimer)
+		if (ninjaY < 170 && activeTimer)
 			ninjaY += 10;
 		break;
 	case GLUT_KEY_DOWN:
-		if (ninjaY > -200 && activeTimer)
+		if (ninjaY > -170 && activeTimer)
 			ninjaY -= 10;
 	}
 
@@ -559,6 +559,7 @@ void onTimer(int v) {
 		}
 		if (sec2 == 0 && sec1 == 0 && msec2 == 0 && msec1 == 0) {
 			state = FIN;
+			activeTimer = false;
 		}
 		else 
 			msec1--;
