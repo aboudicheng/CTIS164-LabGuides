@@ -4,6 +4,9 @@ CTIS164 - Template Source Program
 STUDENT : Ping
 SECTION : 2
 HOMEWORK: 2
+
+Extra Functions:
+	-Highest score system implemented
 ----------
 PROBLEMS: If your program does not function correctly,
 explain here which parts are not running.
@@ -48,6 +51,7 @@ int totalDevil = 0;
 int hitDevil = 0;
 int totalPoints = 0;
 int lastpoint = 0;
+int highest = 0;
 devil_t d[5];
 
 bool shoot = false;
@@ -347,6 +351,8 @@ void display() {
 					lastpoint = 1;
 
 				totalPoints += lastpoint;
+				if (totalPoints > highest)
+					highest = totalPoints;
 				hitDevil++;
 				d[i].hit = true;
 			}
@@ -357,20 +363,28 @@ void display() {
 	}
 
 	glColor3f(0.8, 0.8, 0);
-	vprint(-300, 190, GLUT_BITMAP_HELVETICA_18, "Total Devils");
-	vprint(-260, 150, GLUT_BITMAP_HELVETICA_18, "%d", totalDevil);
-	vprint(-190, 190, GLUT_BITMAP_HELVETICA_18, "Devils Hit");
-	vprint(-160, 150, GLUT_BITMAP_HELVETICA_18, "%d", hitDevil);
-	vprint(-100, 190, GLUT_BITMAP_HELVETICA_18, "Last Point");
-	vprint(-60, 150, GLUT_BITMAP_HELVETICA_18, "%d", lastpoint);
 
+	vprint(-400, 190, GLUT_BITMAP_HELVETICA_18, "Total Devils");
+	vprint(-360, 150, GLUT_BITMAP_HELVETICA_18, "%d", totalDevil);
+	vprint(-290, 190, GLUT_BITMAP_HELVETICA_18, "Devils Hit");
+	vprint(-260, 150, GLUT_BITMAP_HELVETICA_18, "%d", hitDevil);
+	vprint(-200, 190, GLUT_BITMAP_HELVETICA_18, "Last Point");
+	vprint(-160, 150, GLUT_BITMAP_HELVETICA_18, "%d", lastpoint);
+	vprint(-100, 190, GLUT_BITMAP_HELVETICA_18, "Highest Record");
+	vprint(-60, 150, GLUT_BITMAP_HELVETICA_18, "%d", highest);
+
+	if (totalPoints >= highest && state != FIN) {
+		glColor3f(0.8, 0, 0);
+		vprint(-20, 150, GLUT_BITMAP_HELVETICA_18, "NEW");
+	}
+	glColor3f(0.8, 0.8, 0);
 	vprint(290, -270, GLUT_BITMAP_HELVETICA_18, "%d", totalPoints);
 
 	if (state == FIN) {
-		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "Press <F1> to start a new game");
+		vprint(-400, 280, GLUT_BITMAP_HELVETICA_18, "Press <F1> to start a new game");
 	}
 	else
-		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "<Spacebar> Throw, <F1> Pause / Restart");
+		vprint(-400, 280, GLUT_BITMAP_HELVETICA_18, "<Spacebar> Throw, <F1> Pause / Restart");
 	
 
 
@@ -613,7 +627,7 @@ void main(int argc, char *argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Template File");
+	glutCreateWindow("HW2");
 
 	glutDisplayFunc(display);
 	glutReshapeFunc(onResize);
