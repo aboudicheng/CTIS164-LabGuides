@@ -6,7 +6,7 @@ SECTION : 2
 HOMEWORK: 2
 
 Extra Functions:
-	-Highest score system implemented
+-Highest score system implemented
 ----------
 PROBLEMS: If your program does not function correctly,
 explain here which parts are not running.
@@ -59,10 +59,10 @@ bool activeTimer = false;
 int state = FIN;
 
 void onTimer(int v);
-						  //
-						  // to draw circle, center at (x,y)
-						  // radius r
-						  //
+//
+// to draw circle, center at (x,y)
+// radius r
+//
 
 void circle(int x, int y, int r)
 {
@@ -159,7 +159,7 @@ void displayBackground() {
 	glVertex2f(210, -280);
 
 	glEnd();
-	
+
 
 	//Name
 	glColor3ub(181, 49, 198);
@@ -327,38 +327,36 @@ void display() {
 	displayTime();
 	ninja();
 
-	if (!shoot || !activeTimer)
+	if (!shoot)
 		kunaiY = ninjaY;
 
-		kunai();
+	kunai();
 
-	
-	if (state != FIN) {
-		for (int i = 0; i < 5; i++) {
-			if (d[i].hit == false && ((kunaiX - 240 >= d[i].x && kunaiX -240 <= d[i].x + 50) || (kunaiX - 350 >= d[i].x && kunaiX - 350 <= d[i].x + 50))
-				&& 
-				((kunaiY <= d[i].y && kunaiY >= d[i].y - 40) || (kunaiY + 5 <= d[i].y && kunaiY + 5 >= d[i].y - 40) || (kunaiY - 5 <= d[i].y && kunaiY - 5 >= d[i].y - 40)))
-			{
-				if (kunaiY < d[i].y - 16 && kunaiY > d[i].y - 24)
-					lastpoint = 5;
-				else if ((kunaiY < d[i].y - 12 && kunaiY >= d[i].y - 16) || (kunaiY <= d[i].y - 24 && kunaiY > d[i].y - 28))
-					lastpoint = 4;
-				else if ((kunaiY < d[i].y - 8 && kunaiY >= d[i].y - 12) || (kunaiY <= d[i].y - 28 && kunaiY > d[i].y - 32))
-					lastpoint = 3;
-				else if ((kunaiY <= d[i].y - 4 && kunaiY >= d[i].y - 8) || (kunaiY <= d[i].y - 32 && kunaiY >= d[i].y - 36))
-					lastpoint = 2;
-				else 
-					lastpoint = 1;
 
-				totalPoints += lastpoint;
-				if (totalPoints > highest)
-					highest = totalPoints;
-				hitDevil++;
-				d[i].hit = true;
-			}
-			if (d[i].hit != true) {
-				devil(d[i].x, d[i].y);
-			}
+	for (int i = 0; i < 5; i++) {
+		if (d[i].hit == false && ((kunaiX - 240 >= d[i].x && kunaiX - 240 <= d[i].x + 50) || (kunaiX - 350 >= d[i].x && kunaiX - 350 <= d[i].x + 50))
+			&&
+			((kunaiY <= d[i].y && kunaiY >= d[i].y - 40) || (kunaiY + 5 <= d[i].y && kunaiY + 5 >= d[i].y - 40) || (kunaiY - 5 <= d[i].y && kunaiY - 5 >= d[i].y - 40)))
+		{
+			if (kunaiY < d[i].y - 16 && kunaiY > d[i].y - 24)
+				lastpoint = 5;
+			else if ((kunaiY < d[i].y - 12 && kunaiY >= d[i].y - 16) || (kunaiY <= d[i].y - 24 && kunaiY > d[i].y - 28))
+				lastpoint = 4;
+			else if ((kunaiY < d[i].y - 8 && kunaiY >= d[i].y - 12) || (kunaiY <= d[i].y - 28 && kunaiY > d[i].y - 32))
+				lastpoint = 3;
+			else if ((kunaiY <= d[i].y - 4 && kunaiY >= d[i].y - 8) || (kunaiY <= d[i].y - 32 && kunaiY >= d[i].y - 36))
+				lastpoint = 2;
+			else
+				lastpoint = 1;
+
+			totalPoints += lastpoint;
+			if (totalPoints > highest)
+				highest = totalPoints;
+			hitDevil++;
+			d[i].hit = true;
+		}
+		if (d[i].hit != true && totalDevil != 0) {
+			devil(d[i].x, d[i].y);
 		}
 	}
 
@@ -385,7 +383,7 @@ void display() {
 	}
 	else
 		vprint(-400, 280, GLUT_BITMAP_HELVETICA_18, "<Spacebar> Throw, <F1> Pause / Restart");
-	
+
 
 
 
@@ -575,28 +573,28 @@ void onTimer(int v) {
 			state = FIN;
 			activeTimer = false;
 		}
-		else 
+		else
 			msec1--;
 
 		//shuriken motion
 		if (shoot && state == RUN) {
 			if (kunaiX < 800)
 				kunaiX += 8;
-			else
+			else {
 				shoot = false;
+				kunaiX = 0;
+			}
 		}
-		else
-			kunaiX = 0;
 
 		//devils
 		if (state == RUN) {
 
 			for (int i = 0; i < 5; i++) {
-				
+
 				if (d[i].y == -160) {
 					d[i].x = rand() % (351 - 50) + 50;
 					d[i].y = 340;
-					
+
 				}
 				if (d[i].y == 340) {
 					totalDevil++;
@@ -605,7 +603,7 @@ void onTimer(int v) {
 				d[i].y -= 2;
 			}
 		}
-		
+
 	}
 
 
