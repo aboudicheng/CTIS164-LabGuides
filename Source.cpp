@@ -47,6 +47,7 @@ int ninjaY = 0;
 int totalDevil = 0;
 int hitDevil = 0;
 int totalPoints = 0;
+int lastpoint = 0;
 devil_t d[5];
 
 bool shoot = false;
@@ -144,7 +145,7 @@ void displayBackground() {
 	vprint(240, -250, GLUT_BITMAP_9_BY_15, "TOTAL POINTS");
 
 	//rectangle
-	glColor3ub(19, 242, 201);
+	glColor3ub(229, 200, 5);
 	glRectf(-200, -230, 200, -270);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(-210, -280);
@@ -157,7 +158,7 @@ void displayBackground() {
 	
 
 	//Name
-	glColor3ub(250, 0, 255);
+	glColor3ub(181, 49, 198);
 	print(-140, -255, "Hit the Target by Ping Cheng", GLUT_BITMAP_9_BY_15);
 
 	//background
@@ -174,7 +175,11 @@ void displayBackground() {
 
 void displayTime() {
 	glColor3f(0, 1, 0);
-	vprint(-315, -280, GLUT_BITMAP_9_BY_15, "%d%d:%d%d", sec2, sec1, msec2, msec1);
+	if (sec2 == 0 && sec1 == 10)
+		vprint(-315, -280, GLUT_BITMAP_9_BY_15, "%d:%d%d", sec1, msec2, msec1);
+	else
+		vprint(-315, -280, GLUT_BITMAP_9_BY_15, "%d%d:%d%d", sec2, sec1, msec2, msec1);
+
 }
 
 void ninja() {
@@ -301,7 +306,7 @@ void display() {
 
 	if (!shoot)
 		kunaiY = ninjaY;
-	if (shoot)
+	//if (shoot && state != FIN)
 		kunai();
 
 	
@@ -311,7 +316,19 @@ void display() {
 				&& 
 				((kunaiY <= d[i].y && kunaiY >= d[i].y - 40) || (kunaiY + 5 <= d[i].y && kunaiY + 5 >= d[i].y - 40) || (kunaiY - 5 <= d[i].y && kunaiY - 5 >= d[i].y - 40)))
 			{
-				totalPoints++;
+				if (kunaiY < d[i].y - 16 && kunaiY > d[i].y - 24)
+					lastpoint = 5;
+				else if ((kunaiY < d[i].y - 12 && kunaiY >= d[i].y - 16) || (kunaiY <= d[i].y - 24 && kunaiY > d[i].y - 28))
+					lastpoint = 4;
+				else if ((kunaiY < d[i].y - 8 && kunaiY >= d[i].y - 12) || (kunaiY <= d[i].y - 28 && kunaiY > d[i].y - 32))
+					lastpoint = 3;
+				else if ((kunaiY <= d[i].y - 4 && kunaiY >= d[i].y - 8) || (kunaiY <= d[i].y - 32 && kunaiY >= d[i].y - 36))
+					lastpoint = 2;
+				else 
+					lastpoint = 1;
+
+				totalPoints += lastpoint;
+				hitDevil++;
 				d[i].hit = true;
 			}
 			if (d[i].hit != true) {
@@ -321,16 +338,18 @@ void display() {
 	}
 
 	glColor3f(0.8, 0.8, 0);
-	vprint(0, 0, GLUT_BITMAP_HELVETICA_18, "%d", totalDevil);
-	vprint(0, 20, GLUT_BITMAP_HELVETICA_18, "%d", totalPoints);
-	vprint(0, -20, GLUT_BITMAP_HELVETICA_18, "KunaiX: %d", kunaiX);
-	vprint(0, -40, GLUT_BITMAP_HELVETICA_18, "KunaiY: %d", kunaiY);
+	vprint(-300, 190, GLUT_BITMAP_HELVETICA_18, "Total Devils");
+	vprint(-260, 150, GLUT_BITMAP_HELVETICA_18, "%d", totalDevil);
+	vprint(-190, 190, GLUT_BITMAP_HELVETICA_18, "Devils Hit");
+	vprint(-160, 150, GLUT_BITMAP_HELVETICA_18, "%d", hitDevil);
+	vprint(-100, 190, GLUT_BITMAP_HELVETICA_18, "Last Point");
+	vprint(-60, 150, GLUT_BITMAP_HELVETICA_18, "%d", lastpoint);
 
-	for (int i = 0; i < 5; i++) {
-		vprint(0, -60 - i * 20 , GLUT_BITMAP_HELVETICA_18, "DevilX%d: %d, DevilY%d: %d", i, d[i].x, i, d[i].y);
-	}
-	if (state == FIN)
+	vprint(290, -270, GLUT_BITMAP_HELVETICA_18, "%d", totalPoints);
+
+	if (state == FIN) {
 		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "Press <F1> to start a new game");
+	}
 	else
 		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "<Spacebar> Throw, <F1> Pause / Restart");
 	
@@ -380,6 +399,7 @@ void onSpecialKeyDown(int key, int x, int y)
 			totalDevil = 0;
 			hitDevil = 0;
 			totalPoints = 0;
+			lastpoint = 0;
 			//initialize ninja
 			ninjaY = 0;
 			//initialize kunai
@@ -394,6 +414,7 @@ void onSpecialKeyDown(int key, int x, int y)
 			//change state
 			state = RUN;
 			activeTimer = true;
+			shoot = false;
 		}
 		else if (state == RUN) {
 			state = STOP;
