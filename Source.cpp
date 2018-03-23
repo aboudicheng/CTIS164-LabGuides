@@ -32,6 +32,7 @@ explain here which parts are not running.
 typedef struct {
 	int x;
 	int y;
+	bool hit = false;
 }devil_t;
 
 /* Global Variables for Template File */
@@ -43,7 +44,6 @@ int shurikenY = 0;
 int kunaiX = 0, kunaiY = 0;
 int ninjaY = 0;
 
-int ranDevil = 0;
 int totalDevil = 0;
 int hitDevil = 0;
 int totalPoints = 0;
@@ -313,9 +313,14 @@ void display() {
 	
 	if (state != FIN) {
 		for (int i = 0; i < 5; i++) {
-			if ((kunaiX <= d[i].x && kunaiX >= d[i].x + 50) && (kunaiY <= d[i].y && kunaiY >= d[i].y - 40))
+			if (d[i].hit == false && ((kunaiX + 110 >= d[i].x && kunaiX + 110 <= d[i].x + 50))
+				&& 
+				(kunaiY <= d[i].y && kunaiY >= d[i].y - 40))
+			{
 				totalPoints++;
-			else {
+				d[i].hit = true;
+			}
+			if (d[i].hit != true) {
 				devil(d[i].x, d[i].y);
 			}
 		}
@@ -323,6 +328,8 @@ void display() {
 
 	glColor3f(0.8, 0.8, 0);
 	vprint(0, 0, GLUT_BITMAP_HELVETICA_18, "%d", totalDevil);
+	vprint(0, 20, GLUT_BITMAP_HELVETICA_18, "%d", totalPoints);
+	vprint(0, -20, GLUT_BITMAP_HELVETICA_18, "%d", kunaiX);
 	if (state == FIN)
 		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "Press <F1> to start a new game");
 	else
@@ -370,6 +377,10 @@ void onSpecialKeyDown(int key, int x, int y)
 	switch (key) {
 	case GLUT_KEY_F1:
 		if (state == FIN) {
+			//initialize counters
+			totalDevil = 0;
+			hitDevil = 0;
+			totalPoints = 0;
 			//initialize ninja
 			ninjaY = 0;
 			//initialize kunai
@@ -527,11 +538,15 @@ void onTimer(int v) {
 		if (state == RUN) {
 
 			for (int i = 0; i < 5; i++) {
+				
 				if (d[i].y == -160) {
 					d[i].x = rand() % (351 - 50) + 50;
 					d[i].y = 340;
-
+					
+				}
+				if (d[i].y == 340) {
 					totalDevil++;
+					d[i].hit = false;
 				}
 				d[i].y -= 2;
 			}
