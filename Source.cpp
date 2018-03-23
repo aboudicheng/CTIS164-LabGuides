@@ -286,6 +286,25 @@ void devil(int devilX, int devilY) {
 	circle(devilX + 17, devilY - 20, 3);
 	//right eye
 	circle(devilX + 33, devilY - 20, 3);
+
+	//teeth
+	glBegin(GL_TRIANGLES);
+	glVertex2f(devilX + 12, devilY - 25);
+	glVertex2f(devilX + 15, devilY - 35);
+	glVertex2f(devilX + 18, devilY - 30);
+
+	glVertex2f(devilX + 18, devilY - 30);
+	glVertex2f(devilX + 21, devilY - 38);
+	glVertex2f(devilX + 25, devilY - 30);
+
+	glVertex2f(devilX + 25, devilY - 30);
+	glVertex2f(devilX + 28, devilY - 38);
+	glVertex2f(devilX + 31, devilY - 30);
+
+	glVertex2f(devilX + 31, devilY - 30);
+	glVertex2f(devilX + 34, devilY - 35);
+	glVertex2f(devilX + 37, devilY - 25);
+	glEnd();
 }
 
 //
@@ -304,7 +323,7 @@ void display() {
 	displayTime();
 	ninja();
 
-	if (!shoot)
+	if (!shoot || state == FIN)
 		kunaiY = ninjaY;
 	//if (shoot && state != FIN)
 		kunai();
