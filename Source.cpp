@@ -246,11 +246,6 @@ void kunai() {
 
 }
 
-void scoreboard() {
-	glColor3f(0, 0, 0);
-	glRectf(-400, -300, 400, -225);
-}
-
 void devil(int devilX, int devilY) {
 	//corns
 	//left corn
@@ -302,7 +297,6 @@ void display() {
 
 	displayBackground();
 	displayTime();
-	//scoreboard();
 	ninja();
 
 	if (!shoot)
@@ -313,9 +307,9 @@ void display() {
 	
 	if (state != FIN) {
 		for (int i = 0; i < 5; i++) {
-			if (d[i].hit == false && ((kunaiX + 110 >= d[i].x && kunaiX + 110 <= d[i].x + 50))
+			if (d[i].hit == false && ((kunaiX - 240 >= d[i].x && kunaiX -240 <= d[i].x + 50) || (kunaiX - 350 >= d[i].x && kunaiX - 350 <= d[i].x + 50))
 				&& 
-				(kunaiY <= d[i].y && kunaiY >= d[i].y - 40))
+				((kunaiY <= d[i].y && kunaiY >= d[i].y - 40) || (kunaiY + 5 <= d[i].y && kunaiY + 5 >= d[i].y - 40) || (kunaiY - 5 <= d[i].y && kunaiY - 5 >= d[i].y - 40)))
 			{
 				totalPoints++;
 				d[i].hit = true;
@@ -329,7 +323,12 @@ void display() {
 	glColor3f(0.8, 0.8, 0);
 	vprint(0, 0, GLUT_BITMAP_HELVETICA_18, "%d", totalDevil);
 	vprint(0, 20, GLUT_BITMAP_HELVETICA_18, "%d", totalPoints);
-	vprint(0, -20, GLUT_BITMAP_HELVETICA_18, "%d", kunaiX);
+	vprint(0, -20, GLUT_BITMAP_HELVETICA_18, "KunaiX: %d", kunaiX);
+	vprint(0, -40, GLUT_BITMAP_HELVETICA_18, "KunaiY: %d", kunaiY);
+
+	for (int i = 0; i < 5; i++) {
+		vprint(0, -60 - i * 20 , GLUT_BITMAP_HELVETICA_18, "DevilX%d: %d, DevilY%d: %d", i, d[i].x, i, d[i].y);
+	}
 	if (state == FIN)
 		vprint(-385, 280, GLUT_BITMAP_HELVETICA_18, "Press <F1> to start a new game");
 	else
