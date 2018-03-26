@@ -7,6 +7,7 @@ HOMEWORK: 2
 
 Extra Functions:
 -Highest score system implemented
+-1 point gets deducted if object does not hit a target
 ----------
 PROBLEMS: If your program does not function correctly,
 explain here which parts are not running.
