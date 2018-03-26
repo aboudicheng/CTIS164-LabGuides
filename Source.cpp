@@ -54,6 +54,7 @@ int lastpoint = 0;
 int highest = 0;
 devil_t d[5];
 
+bool hit = false;
 bool shoot = false;
 bool activeTimer = false;
 int state = FIN;
@@ -354,7 +355,9 @@ void display() {
 				highest = totalPoints;
 			hitDevil++;
 			d[i].hit = true;
+			hit = true;
 		}
+		
 		if (d[i].hit != true && totalDevil != 0) {
 			devil(d[i].x, d[i].y);
 		}
@@ -579,9 +582,15 @@ void onTimer(int v) {
 		//shuriken motion
 		if (shoot && state == RUN) {
 			if (kunaiX < 800)
-				kunaiX += 8;
+				kunaiX += 50;
 			else {
+				if (hit == false) {
+					lastpoint = -1;
+					totalPoints -= 1;
+				}
+				hit = false;
 				shoot = false;
+				
 				kunaiX = 0;
 			}
 		}
