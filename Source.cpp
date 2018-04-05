@@ -8,6 +8,11 @@ HOMEWORK: 3
 PROBLEMS:
 ----------
 ADDITIONAL FEATURES:
+-Timer
+-Best record
+-Stage system
+-Harder after each stage
+-Aiming dotted line
 *********/
 
 #include <GL/glut.h>
@@ -30,6 +35,11 @@ ADDITIONAL FEATURES:
 #define RUN 1
 
 int state = START;
+int stage = 1;
+int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
+int recmin1 = 0, recmin2 = 0, recsec1 = 0, recsec2 = 0, recmsec1 = 0, recmsec2 = 0;
+int lock = 0;
+int fireloader = 0;
 
 /* Global Variables for Template File */
 bool up = false, down = false, right = false, left = false;
@@ -170,12 +180,26 @@ void displayBackground() {
 	glVertex2f(0, -WINDOW_HEIGHT);
 	glEnd();
 
+	//stage number
+	glColor3f(0, 0, 0);
+	glRectf(-40, 390, 40, 360);
+	glColor3f(0, 1, 0);
+	vprint(-35, 370, GLUT_BITMAP_HELVETICA_18, "STAGE %d", stage);
+
 	if (state == START) {
 		glColor3f(0, 0, 0);
 		glRectf(-50, -150, 50, -100);
 		glColor3f(1, 1, 1);
 		vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO START");
 	}
+
+	//time and best record
+	glColor3f(0, 1, 0);
+	vprint(340, 380, GLUT_BITMAP_9_BY_15, "TIME");
+	vprint(320, 360, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", min2, min1, sec2, sec1, msec2, msec1);
+
+	vprint(340, 320, GLUT_BITMAP_9_BY_15, "BEST");
+	vprint(320, 300, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", recmin2, recmin1, recsec2, recsec1, recmsec2, recmsec1);
 }
 
 void object(target_t t, float radius) {
@@ -184,23 +208,105 @@ void object(target_t t, float radius) {
 	glColor3f(1, 1, 1);
 	if (t.angle < 0)
 		t.angle += 360;
-	vprint(-10 + (radius) * cos(t.angle * D2R), -10 + (radius) * sin(t.angle * D2R), GLUT_BITMAP_8_BY_13, "%.0f", t.angle);
+	glColor3f(0, 0, 0);
+	vprint(-10 + (radius) * cos(t.angle * D2R), -10 + (radius) * sin(t.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", t.angle);
 }
 
 void player(player_t pl) {
-	glColor3f(1, 1, 0);
-	glLineWidth(3);
-	glBegin(GL_LINES);
-	glVertex2f(0, 0);
+	glColor3ub(255, 123, 0);
+	glLineWidth(6);
+	
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(-80 * cos((pl.angle - 45) * D2R), -80 * sin((pl.angle - 45) * D2R));
+	glVertex2f(-50 * cos((pl.angle - 45) * D2R), -50 * sin((pl.angle - 45) * D2R));
+	glVertex2f(30 * cos((pl.angle + 90) * D2R), 30 * sin((pl.angle + 90) * D2R));
 	glVertex2f(50 * cos(pl.angle * D2R), 50 * sin(pl.angle * D2R));
+	glVertex2f(30 * cos((pl.angle - 90) * D2R), 30 * sin((pl.angle - 90) * D2R));
+	glVertex2f(-50 * cos((pl.angle + 45) * D2R), -50 * sin((pl.angle + 45) * D2R));
+	glVertex2f(-80 * cos((pl.angle + 45) * D2R), -80 * sin((pl.angle + 45) * D2R));
+	
+	glVertex2f(-55 * cos((pl.angle + 45) * D2R), -55 * sin((pl.angle + 45) * D2R));
+	glVertex2f(25 * cos((pl.angle - 90) * D2R), 25 * sin((pl.angle - 90) * D2R));
+	glVertex2f(45 * cos(pl.angle * D2R), 45 * sin(pl.angle * D2R));
+	glVertex2f(25 * cos((pl.angle + 90) * D2R), 25 * sin((pl.angle + 90) * D2R));
+	glVertex2f(-55 * cos((pl.angle - 45) * D2R), -55 * sin((pl.angle - 45) * D2R));
+	glVertex2f(-85 * cos((pl.angle - 45) * D2R), -85 * sin((pl.angle - 45) * D2R));
 	glEnd();
+
+	glBegin(GL_LINES);
+	glColor3f(1, 1, 1);
+	glVertex2f(-50 * cos((pl.angle - 45) * D2R), -50 * sin((pl.angle - 45) * D2R));
+	glVertex2f(-50 * cos((pl.angle + 45) * D2R), -50 * sin((pl.angle + 45) * D2R));
+	glEnd();
+
+	glLineWidth(2);
+	glBegin(GL_LINES);
+	glColor3ub(135, 135, 135);
+	glVertex2f(-50 * cos((pl.angle - 45) * D2R), -50 * sin((pl.angle - 45) * D2R));
+	glVertex2f(-50 * cos((pl.angle + 45) * D2R), -50 * sin((pl.angle + 45) * D2R));
+	glEnd();
+
+	//aiming dotted lines
+	glColor3f(1, 0, 0);
+	glBegin(GL_LINES);
+	if (lock < 5) {
+		glVertex2f(50 * cos(pl.angle * D2R), 50 * sin(pl.angle * D2R));
+		glVertex2f(100 * cos(pl.angle * D2R), 100 * sin(pl.angle * D2R));
+	}
+	else if (lock < 10) {
+		glVertex2f(100 * cos(pl.angle * D2R), 100 * sin(pl.angle * D2R));
+		glVertex2f(150 * cos(pl.angle * D2R), 150 * sin(pl.angle * D2R));
+	}
+	else if (lock < 15) {
+		glVertex2f(150 * cos(pl.angle * D2R), 150 * sin(pl.angle * D2R));
+		glVertex2f(200 * cos(pl.angle * D2R), 200 * sin(pl.angle * D2R));
+	}
+	else if (lock < 20) {
+		glVertex2f(200 * cos(pl.angle * D2R), 200 * sin(pl.angle * D2R));
+		glVertex2f(250 * cos(pl.angle * D2R), 250 * sin(pl.angle * D2R));
+	}
+	else if (lock < 25) {
+		glVertex2f(250 * cos(pl.angle * D2R), 250 * sin(pl.angle * D2R));
+		glVertex2f(300 * cos(pl.angle * D2R), 300 * sin(pl.angle * D2R));
+	}
+	else if (lock < 30) {
+		glVertex2f(300 * cos(pl.angle * D2R), 300 * sin(pl.angle * D2R));
+		glVertex2f(350 * cos(pl.angle * D2R), 350 * sin(pl.angle * D2R));
+	}
+	else if (lock < 35) {
+		glVertex2f(350 * cos(pl.angle * D2R), 350 * sin(pl.angle * D2R));
+		glVertex2f(400 * cos(pl.angle * D2R), 400 * sin(pl.angle * D2R));
+	}
+	else if (lock < 40) {
+		glVertex2f(400 * cos(pl.angle * D2R), 400 * sin(pl.angle * D2R));
+		glVertex2f(450 * cos(pl.angle * D2R), 450 * sin(pl.angle * D2R));
+	}
+	else if (lock < 45) {
+		glVertex2f(450 * cos(pl.angle * D2R), 450 * sin(pl.angle * D2R));
+		glVertex2f(500 * cos(pl.angle * D2R), 500 * sin(pl.angle * D2R));
+	}
+	else {
+		glVertex2f(500 * cos(pl.angle * D2R), 500 * sin(pl.angle * D2R));
+		glVertex2f(550 * cos(pl.angle * D2R), 550 * sin(pl.angle * D2R));
+	}
+	glEnd();
+
 	glLineWidth(1);
 }
 
 void fire() {
 	if (fr.active) {
-		glColor3f(1, 1, 1);
-		circle(fr.pos.x, fr.pos.y, 6);
+		glColor3ub(39, 232, 225);
+		circle(fr.pos.x, fr.pos.y, 10);
+		glColor3ub(206, 237, 236);
+		circle(fr.pos.x, fr.pos.y, 5);
+
+		glColor3f(0, 0, 0);
+		glRectf(-50, 160, 50, 130);
+
+		glColor3f(0, 1, 0);
+		glRectf(-120, 120, -120 + fireloader, 100);
+		vprint(-40, 140, GLUT_BITMAP_9_BY_15, "Reloading...");
 	}
 }
 
@@ -239,8 +345,9 @@ void display() {
 		}
 	}
 
+	//initialize
 	if (state == RUN && target[0].hit && target[1].hit &&target[2].hit) {
-		
+		fireloader = 0;
 		fr.active = false;
 		fr.pos.x = 0;
 		fr.pos.y = 0;
@@ -250,12 +357,38 @@ void display() {
 			target[i].color.b = rand() % 256;
 			target[i].direction = rand() & 1;
 			target[i].angle = rand() % 361;
-			target[i].speed = rand() % 2 + 1;
+			//speed gets faster as after every stage
+			target[i].speed = rand() % (1 + stage) + 1;
 			target[i].hit = false;
+
+			if (stage != 1) {
+				//compare current time & best record
+				int rectime = recmin2 * 60000 + recmin1 * 6000 + recsec2 * 1000 + recsec1 * 100 + recmsec2 * 10 + recmsec1;
+				int time = min2 * 60000 + min1 * 6000 + sec2 * 1000 + sec1 * 100 + msec2 * 10 + msec1;
+				if (time < rectime) {
+					recmin2 = min2;
+					recmin1 = min1;
+					recsec2 = sec2;
+					recsec1 = sec1;
+					recmsec2 = msec2;
+					recmsec1 = msec1;
+				}
+			}
+			//if stage is one, simply copy time as best record
+			else {
+				recmin2 = min2;
+				recmin1 = min1;
+				recsec2 = sec2;
+				recsec1 = sec1;
+				recmsec2 = msec2;
+				recmsec1 = msec1;
+			}
+			
 		}
+		//add stage after completing each time
+		stage++;
 		state = START;
 	}
-
 
 	glutSwapBuffers();
 }
@@ -331,6 +464,7 @@ void onClick(int button, int stat, int x, int y)
 	// Write your codes here.
 	if (state == START && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN) {
 		state = RUN;
+		min2 = min1 = sec2 = sec1 = msec2 = msec1 = 0;
 	}
 	else if (state == RUN && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN) {
 		if (!fr.active) {
@@ -398,7 +532,10 @@ void onMove(int x, int y) {
 
 #if TIMER_ON == 1
 void onTimer(int v) {
-
+	
+	lock++;
+	if (lock == 50)
+		lock = 0;
 	glutTimerFunc(TIMER_PERIOD, onTimer, 0);
 	// Write your codes here.
 
@@ -418,11 +555,32 @@ void onTimer(int v) {
 		if (fr.active) {
 			fr.pos.x += 10 * cos(fr.angle * D2R);
 			fr.pos.y += 10 * sin(fr.angle * D2R);
+			fireloader += 5;
 
 			if (fr.pos.x > 400 || fr.pos.x < -400 || fr.pos.y > 400 || fr.pos.y < -400) {
 				fr.active = false;
+				fireloader = 0;
 			}
 		}
+
+		//time
+		if (msec1 == 9) {
+			msec2++;
+			msec1 = 0;
+			if (msec2 == 10) {
+				sec1++;
+				msec2 = 0;
+			}
+		}
+		if (sec1 == 10) {
+			sec1 = 0;
+			sec2++;
+			if (sec2 == 6) {
+				min1++;
+				sec2 = 0;
+			}
+		}
+		msec1++;
 	}
 	// to refresh the window it calls display() function
 	glutPostRedisplay(); // display()
