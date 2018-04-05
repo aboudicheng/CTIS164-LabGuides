@@ -57,12 +57,15 @@ typedef struct {
 	point_t center;
 	color_t color;
 	float radius;
+	float angle;
 	float speed;
+	bool direction;
+	bool hit = false;
 } target_t;
 
 player_t pl;
 fire_t fr;
-int fire_rate = 0;
+int fire_rate = 0, direction=1;
 target_t target[3];
 
 						  //
@@ -148,9 +151,20 @@ void vprint2(int x, int y, float size, char *string, ...) {
 }
 
 void displayBackground() {
+
+	//white
 	glColor3f(1, 1, 1);
+
+	//draw orbits
+	circle_wire(0, 0, 250);
+	circle_wire(0, 0, 300);
+	circle_wire(0, 0, 350);
+
+	//Name info
 	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 20, GLUT_BITMAP_9_BY_15, "Homework #3");
 	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 40, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
+
+	//x y axis
 	glBegin(GL_LINES);
 	glVertex2f(-WINDOW_WIDTH / 2, 0);
 	glVertex2f(WINDOW_WIDTH / 2, 0);
@@ -167,12 +181,9 @@ void displayBackground() {
 	}
 }
 
-void object(target_t t) {
-	t.color.r = rand() % 256;
-	t.color.g = rand() % 256;
-	t.color.b = rand() % 256;
+void object(target_t t, float radius) {
 	glColor3ub(t.color.r, t.color.g, t.color.b);
-	circle(t.center.x, t.center.y, t.radius);
+	circle(radius * cos(t.angle * D2R), radius * sin(t.angle * D2R), 20);
 }
 
 void player(player_t pl) {
@@ -192,6 +203,13 @@ void fire() {
 	}
 }
 
+bool testCollision(fire_t fr, target_t t, float radius) {
+	float dx = t.center.x - fr.pos.x;
+	float dy = t.center.y - fr.pos.y;
+	float d = sqrt(dx*dx + dy*dy);
+	return d <= radius;
+}
+
 //
 // To display onto window using OpenGL commands
 //
@@ -203,15 +221,21 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	displayBackground();
-	//draw orbits
-	circle_wire(0, 0, 250);
-	circle_wire(0, 0, 300);
-	circle_wire(0, 0, 350);
-
 	vprint(370 * cos(pl.angle * D2R), 370 * sin(pl.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", pl.angle);
 
 	player(pl);
 	fire();
+
+	if (state == RUN) {
+		float radius = 350;
+		for (int i = 0; i < 3; i++) {
+			if (testCollision(fr, target[i], radius))
+				target[i].hit = true;
+			if (!target[i].hit)
+				object(target[i], radius);
+			radius -= 50;
+		}
+	}
 
 
 	glutSwapBuffers();
@@ -360,6 +384,15 @@ void onTimer(int v) {
 	// Write your codes here.
 
 	if (state == RUN) {
+		for (int i = 0; i < 3; i++) {
+			if (target[i].direction) {
+				target[i].angle += target[i].speed;
+			}
+			else
+				target[i].angle -= target[i].speed;
+			if (target[i].angle > 360)
+				target[i].angle -= 360;
+		}
 		if (fr.active) {
 			fr.pos.x += 10 * cos(fr.angle * D2R);
 			fr.pos.y += 10 * sin(fr.angle * D2R);
@@ -369,7 +402,6 @@ void onTimer(int v) {
 			}
 		}
 	}
-
 	// to refresh the window it calls display() function
 	glutPostRedisplay(); // display()
 
@@ -381,6 +413,17 @@ void Init() {
 	// Smoothing shapes
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	for (int i = 0; i < 3; i++) {
+		target[i].center.x = 0;
+		target[i].center.y = 350;
+		target[i].color.r = rand() % 256;
+		target[i].color.g = rand() % 256;
+		target[i].color.b = rand() % 256;
+		target[i].direction = rand() & 1;
+		target[i].angle = rand() % 361;
+		target[i].speed = rand() % 2 + 1;
+	}
 
 }
 
