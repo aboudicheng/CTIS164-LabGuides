@@ -54,9 +54,7 @@ typedef struct {
 } color_t;
 
 typedef struct {
-	point_t center;
 	color_t color;
-	float radius;
 	float angle;
 	float speed;
 	bool direction;
@@ -65,7 +63,6 @@ typedef struct {
 
 player_t pl;
 fire_t fr;
-int fire_rate = 0, direction=1;
 target_t target[3];
 
 						  //
@@ -184,6 +181,10 @@ void displayBackground() {
 void object(target_t t, float radius) {
 	glColor3ub(t.color.r, t.color.g, t.color.b);
 	circle(radius * cos(t.angle * D2R), radius * sin(t.angle * D2R), 20);
+	glColor3f(1, 1, 1);
+	if (t.angle < 0)
+		t.angle += 360;
+	vprint(-10 + (radius) * cos(t.angle * D2R), -10 + (radius) * sin(t.angle * D2R), GLUT_BITMAP_8_BY_13, "%.0f", t.angle);
 }
 
 void player(player_t pl) {
@@ -204,10 +205,10 @@ void fire() {
 }
 
 bool testCollision(fire_t fr, target_t t, float radius) {
-	float dx = t.center.x - fr.pos.x;
-	float dy = t.center.y - fr.pos.y;
+	float dx = radius * cos(t.angle * D2R) - fr.pos.x;
+	float dy = radius * sin(t.angle * D2R) - fr.pos.y;
 	float d = sqrt(dx*dx + dy*dy);
-	return d <= radius;
+	return d <= 20;
 }
 
 //
@@ -227,14 +228,32 @@ void display() {
 	fire();
 
 	if (state == RUN) {
-		float radius = 350;
+		float radius = 250;
 		for (int i = 0; i < 3; i++) {
-			if (testCollision(fr, target[i], radius))
+			if (testCollision(fr, target[i], radius)) {
 				target[i].hit = true;
+			}
 			if (!target[i].hit)
 				object(target[i], radius);
-			radius -= 50;
+			radius += 50;
 		}
+	}
+
+	if (state == RUN && target[0].hit && target[1].hit &&target[2].hit) {
+		
+		fr.active = false;
+		fr.pos.x = 0;
+		fr.pos.y = 0;
+		for (int i = 0; i < 3; i++) {
+			target[i].color.r = rand() % 256;
+			target[i].color.g = rand() % 256;
+			target[i].color.b = rand() % 256;
+			target[i].direction = rand() & 1;
+			target[i].angle = rand() % 361;
+			target[i].speed = rand() % 2 + 1;
+			target[i].hit = false;
+		}
+		state = START;
 	}
 
 
@@ -385,13 +404,16 @@ void onTimer(int v) {
 
 	if (state == RUN) {
 		for (int i = 0; i < 3; i++) {
-			if (target[i].direction) {
+			//clockwise or counter clockwise
+			if (target[i].direction)
 				target[i].angle += target[i].speed;
-			}
 			else
 				target[i].angle -= target[i].speed;
+
 			if (target[i].angle > 360)
 				target[i].angle -= 360;
+			else if (target[i].angle < -360)
+				target[i].angle += 360;
 		}
 		if (fr.active) {
 			fr.pos.x += 10 * cos(fr.angle * D2R);
@@ -409,14 +431,12 @@ void onTimer(int v) {
 #endif
 
 void Init() {
-
+	
 	// Smoothing shapes
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	for (int i = 0; i < 3; i++) {
-		target[i].center.x = 0;
-		target[i].center.y = 350;
 		target[i].color.r = rand() % 256;
 		target[i].color.g = rand() % 256;
 		target[i].color.b = rand() % 256;
@@ -428,6 +448,7 @@ void Init() {
 }
 
 void main(int argc, char *argv[]) {
+	srand(time(NULL));
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -459,6 +480,6 @@ void main(int argc, char *argv[]) {
 #endif
 
 	Init();
-	srand(time(NULL));
+	
 	glutMainLoop();
 }
