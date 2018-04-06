@@ -11,8 +11,9 @@ ADDITIONAL FEATURES:
 -Timer
 -Best record
 -Stage system
--Harder after each stage
--Aiming dotted line
+-Harder after each stage (objects get more likely to move faster)
+-Aiming dotted line animation
+-As player presses mouse longer fire will be faster
 *********/
 
 #include <GL/glut.h>
@@ -40,6 +41,8 @@ int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
 int recmin1 = 0, recmin2 = 0, recsec1 = 0, recsec2 = 0, recmsec1 = 0, recmsec2 = 0;
 int lock = 0;
 int fireloader = 0;
+bool pressed = false;
+float strength = 10;
 
 /* Global Variables for Template File */
 bool up = false, down = false, right = false, left = false;
@@ -71,9 +74,14 @@ typedef struct {
 	bool hit = false;
 } target_t;
 
+typedef struct {
+	int r, g, b;
+} maxpow_t;
+
 player_t pl;
 fire_t fr;
 target_t target[3];
+maxpow_t maxpow = { 0, 0, 0 };
 
 						  //
 						  // to draw circle, center at (x,y)
@@ -308,13 +316,24 @@ void fire() {
 		glRectf(-120, 120, -120 + fireloader, 100);
 		vprint(-40, 140, GLUT_BITMAP_9_BY_15, "Reloading...");
 	}
+	else {
+		if (pressed) {
+			if (strength > 20) {
+				if (strength * 2 < 200)
+					glColor3f(1, 1, 0);
+				else
+					glColor3ub(maxpow.r, maxpow.g, maxpow.b);
+				glRectf(-100, -120, -100 + strength * 2, -100);
+			}
+		}
+	}
 }
 
 bool testCollision(fire_t fr, target_t t, float radius) {
 	float dx = radius * cos(t.angle * D2R) - fr.pos.x;
 	float dy = radius * sin(t.angle * D2R) - fr.pos.y;
 	float d = sqrt(dx*dx + dy*dy);
-	return d <= 20;
+	return d <= 40;
 }
 
 //
@@ -401,7 +420,6 @@ void onKeyDown(unsigned char key, int x, int y)
 	// exit when ESC is pressed.
 	if (key == 27)
 		exit(0);
-
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
 }
@@ -466,7 +484,13 @@ void onClick(int button, int stat, int x, int y)
 		state = RUN;
 		min2 = min1 = sec2 = sec1 = msec2 = msec1 = 0;
 	}
+	//increase speed while holding
 	else if (state == RUN && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN) {
+		pressed = true;
+	}
+	//shoot when release
+	else if (state == RUN && button == GLUT_LEFT_BUTTON && stat == GLUT_UP) {
+		pressed = false;
 		if (!fr.active) {
 			fr.pos.x = 0;
 			fr.pos.y = 0;
@@ -523,7 +547,6 @@ int getMouseAngle(int x, int y) {
 void onMove(int x, int y) {
 	// Write your codes here.
 	pl.angle = getMouseAngle(x, y);
-	glColor3f(1, 1, 1);
 	
 
 	// to refresh the window it calls display() function
@@ -532,10 +555,23 @@ void onMove(int x, int y) {
 
 #if TIMER_ON == 1
 void onTimer(int v) {
-	
+
+	//aiming animation
 	lock++;
 	if (lock == 50)
 		lock = 0;
+
+	if (pressed) {
+		if (strength < 100)
+			strength += 1;
+		else {
+			//maxpower color animation
+			maxpow.r = rand() % 256;
+			maxpow.g = rand() % 256;
+			maxpow.b = rand() % 256;
+		}
+	}
+
 	glutTimerFunc(TIMER_PERIOD, onTimer, 0);
 	// Write your codes here.
 
@@ -553,13 +589,14 @@ void onTimer(int v) {
 				target[i].angle += 360;
 		}
 		if (fr.active) {
-			fr.pos.x += 10 * cos(fr.angle * D2R);
-			fr.pos.y += 10 * sin(fr.angle * D2R);
+			fr.pos.x += strength * cos(fr.angle * D2R);
+			fr.pos.y += strength * sin(fr.angle * D2R);
 			fireloader += 5;
 
 			if (fr.pos.x > 400 || fr.pos.x < -400 || fr.pos.y > 400 || fr.pos.y < -400) {
 				fr.active = false;
 				fireloader = 0;
+				strength = 10;
 			}
 		}
 
