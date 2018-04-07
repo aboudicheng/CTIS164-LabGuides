@@ -549,15 +549,6 @@ void onResize(int w, int h)
 	display(); // refresh window.
 }
 
-void onMoveDown(int x, int y) {
-	// Write your codes here.
-
-
-
-	// to refresh the window it calls display() function   
-	glutPostRedisplay();
-}
-
 int getMouseAngle(int x, int y) {
 	int x2 = x - winWidth / 2;
 	int y2 = winHeight / 2 - y;
@@ -567,6 +558,16 @@ int getMouseAngle(int x, int y) {
 
 	return angle;
 }
+
+void onMoveDown(int x, int y) {
+	// Write your codes here.
+	pl.angle = getMouseAngle(x, y);
+
+
+	// to refresh the window it calls display() function   
+	glutPostRedisplay();
+}
+
 
 // GLUT to OpenGL coordinate conversion:
 //   x2 = x1 - winWidth / 2
