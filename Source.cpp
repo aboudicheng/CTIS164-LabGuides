@@ -86,6 +86,7 @@ typedef struct {
 	float speed;
 	bool direction;
 	bool hit = false;
+	float radius;
 } target_t;
 
 //for shining animation
@@ -231,7 +232,7 @@ void displayBackground() {
 
 void object(target_t t, float radius) {
 	glColor3ub(t.color.r, t.color.g, t.color.b);
-	circle(radius * cos(t.angle * D2R), radius * sin(t.angle * D2R), 20);
+	circle(radius * cos(t.angle * D2R), radius * sin(t.angle * D2R), t.radius);
 	glColor3f(1, 1, 1);
 	if (t.angle < 0)
 		t.angle += 360;
@@ -355,7 +356,7 @@ bool testCollision(fire_t fr, target_t t, float radius) {
 	float dx = radius * cos(t.angle * D2R) - fr.pos.x;
 	float dy = radius * sin(t.angle * D2R) - fr.pos.y;
 	float d = sqrt(dx*dx + dy*dy);
-	return d <= 40;
+	return d <= (t.radius);
 }
 
 //
@@ -369,6 +370,7 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	displayBackground();
+	//angle next to orbit
 	vprint(370 * cos(pl.angle * D2R), 370 * sin(pl.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", pl.angle);
 
 	player(pl);
@@ -402,22 +404,14 @@ void display() {
 			//speed gets faster as after every stage
 			target[i].speed = rand() % (1 + stage) + 1;
 			target[i].hit = false;
+			target[i].radius = rand() % 11 + 20;
+		}
 
-			if (stage != 1) {
-				//compare current time & best record
-				int rectime = recmin2 * 60000 + recmin1 * 6000 + recsec2 * 1000 + recsec1 * 100 + recmsec2 * 10 + recmsec1;
-				int time = min2 * 60000 + min1 * 6000 + sec2 * 1000 + sec1 * 100 + msec2 * 10 + msec1;
-				if (time < rectime) {
-					recmin2 = min2;
-					recmin1 = min1;
-					recsec2 = sec2;
-					recsec1 = sec1;
-					recmsec2 = msec2;
-					recmsec1 = msec1;
-				}
-			}
-			//if stage is one, simply copy time as best record
-			else {
+		if (stage != 1) {
+			//compare current time & best record
+			int rectime = recmin2 * 60000 + recmin1 * 6000 + recsec2 * 1000 + recsec1 * 100 + recmsec2 * 10 + recmsec1;
+			int time = min2 * 60000 + min1 * 6000 + sec2 * 1000 + sec1 * 100 + msec2 * 10 + msec1;
+			if (time < rectime) {
 				recmin2 = min2;
 				recmin1 = min1;
 				recsec2 = sec2;
@@ -425,8 +419,18 @@ void display() {
 				recmsec2 = msec2;
 				recmsec1 = msec1;
 			}
-			
 		}
+
+		//if stage is one, simply copy time as best record
+		else {
+			recmin2 = min2;
+			recmin1 = min1;
+			recsec2 = sec2;
+			recsec1 = sec1;
+			recmsec2 = msec2;
+			recmsec1 = msec1;
+		}
+
 		//add stage after completing each time
 		stage++;
 		state = START;
@@ -570,8 +574,6 @@ int getMouseAngle(int x, int y) {
 void onMove(int x, int y) {
 	// Write your codes here.
 	pl.angle = getMouseAngle(x, y);
-	
-
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
 }
@@ -663,6 +665,7 @@ void Init() {
 		target[i].direction = rand() & 1;
 		target[i].angle = rand() % 361;
 		target[i].speed = rand() % 2 + 1;
+		target[i].radius = rand() % 11 + 20;
 	}
 
 }
