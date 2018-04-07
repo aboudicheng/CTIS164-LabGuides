@@ -35,13 +35,27 @@ ADDITIONAL FEATURES:
 #define START 0
 #define RUN 1
 
+//state
 int state = START;
+
+//stage level
 int stage = 1;
+
+//timer
 int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
+//timer for best record
 int recmin1 = 0, recmin2 = 0, recsec1 = 0, recsec2 = 0, recmsec1 = 0, recmsec2 = 0;
+
+//dotted lines animation
 int lock = 0;
+
+//loading animation
 int fireloader = 0;
+
+//mouse click
 bool pressed = false;
+
+//power that increases when user holds on clicking
 float strength = 10;
 
 /* Global Variables for Template File */
@@ -74,6 +88,7 @@ typedef struct {
 	bool hit = false;
 } target_t;
 
+//for shining animation
 typedef struct {
 	int r, g, b;
 } maxpow_t;
@@ -167,6 +182,12 @@ void vprint2(int x, int y, float size, char *string, ...) {
 
 void displayBackground() {
 
+	glColor3ub(212, 0, 255);
+
+	//Name info
+	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 20, GLUT_BITMAP_9_BY_15, "Homework #3");
+	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 40, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
+
 	//white
 	glColor3f(1, 1, 1);
 
@@ -175,9 +196,7 @@ void displayBackground() {
 	circle_wire(0, 0, 300);
 	circle_wire(0, 0, 350);
 
-	//Name info
-	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 20, GLUT_BITMAP_9_BY_15, "Homework #3");
-	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 40, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
+	
 
 	//x y axis
 	glBegin(GL_LINES);
@@ -191,13 +210,13 @@ void displayBackground() {
 	//stage number
 	glColor3f(0, 0, 0);
 	glRectf(-40, 390, 40, 360);
-	glColor3f(0, 1, 0);
+	glColor3ub(212, 0, 255);
 	vprint(-35, 370, GLUT_BITMAP_HELVETICA_18, "STAGE %d", stage);
 
 	if (state == START) {
 		glColor3f(0, 0, 0);
 		glRectf(-50, -150, 50, -100);
-		glColor3f(1, 1, 1);
+		glColor3f(1, 1, 0);
 		vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO START");
 	}
 
@@ -319,10 +338,13 @@ void fire() {
 	else {
 		if (pressed) {
 			if (strength > 20) {
+				//while pressing keep the color as red
 				if (strength * 2 < 200)
 					glColor3f(1, 1, 0);
+				//color shines when it reaches max
 				else
 					glColor3ub(maxpow.r, maxpow.g, maxpow.b);
+
 				glRectf(-100, -120, -100 + strength * 2, -100);
 			}
 		}
@@ -368,6 +390,7 @@ void display() {
 	if (state == RUN && target[0].hit && target[1].hit &&target[2].hit) {
 		fireloader = 0;
 		fr.active = false;
+		strength = 10;
 		fr.pos.x = 0;
 		fr.pos.y = 0;
 		for (int i = 0; i < 3; i++) {
@@ -480,7 +503,7 @@ void onSpecialKeyUp(int key, int x, int y)
 void onClick(int button, int stat, int x, int y)
 {
 	// Write your codes here.
-	if (state == START && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN) {
+	if (state == START && button == GLUT_LEFT_BUTTON && stat == GLUT_UP) {
 		state = RUN;
 		min2 = min1 = sec2 = sec1 = msec2 = msec1 = 0;
 	}
@@ -588,11 +611,13 @@ void onTimer(int v) {
 			else if (target[i].angle < -360)
 				target[i].angle += 360;
 		}
+
 		if (fr.active) {
 			fr.pos.x += strength * cos(fr.angle * D2R);
 			fr.pos.y += strength * sin(fr.angle * D2R);
 			fireloader += 5;
 
+			//when fire reaches the border
 			if (fr.pos.x > 400 || fr.pos.x < -400 || fr.pos.y > 400 || fr.pos.y < -400) {
 				fr.active = false;
 				fireloader = 0;
