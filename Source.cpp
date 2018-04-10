@@ -8,12 +8,15 @@ HOMEWORK: 3
 PROBLEMS:
 ----------
 ADDITIONAL FEATURES:
+-Menu
 -Timer
--Best record
+-Scoreboard using bubble sorting algorithm
 -Stage system
 -Harder after each stage (objects get more likely to move faster)
 -Aiming dotted line animation
 -As player presses mouse longer fire will be faster
+
+NOTE: Each gameplay requires player to pass 10 stages
 *********/
 
 #include <GL/glut.h>
