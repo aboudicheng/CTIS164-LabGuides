@@ -32,19 +32,26 @@ ADDITIONAL FEATURES:
 
 #define D2R 0.0174532
 
-#define START 0
-#define RUN 1
+enum stat {MENU, START, RUN, SCOREBOARD};
+enum opt {OUT, PLAY, SCORE, EXIT};
 
 //state
-int state = START;
+int state = MENU;
+int opt = OUT;
+
+//scoreboard
+int gameplay = 0;
 
 //stage level
 int stage = 1;
 
 //timer
-int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
-//timer for best record
-int recmin1 = 0, recmin2 = 0, recsec1 = 0, recsec2 = 0, recmsec1 = 0, recmsec2 = 0;
+typedef struct {
+	int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
+} timer_t;
+
+timer_t timer[100];
+//int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
 
 //dotted lines animation
 int lock = 0;
@@ -99,10 +106,10 @@ fire_t fr;
 target_t target[3];
 maxpow_t maxpow = { 0, 0, 0 };
 
-						  //
-						  // to draw circle, center at (x,y)
-						  // radius r
-						  //
+//
+// to draw circle, center at (x,y)
+// radius r
+//
 void circle(int x, int y, int r)
 {
 #define PI 3.1415
@@ -197,8 +204,6 @@ void displayBackground() {
 	circle_wire(0, 0, 300);
 	circle_wire(0, 0, 350);
 
-	
-
 	//x y axis
 	glBegin(GL_LINES);
 	glVertex2f(-WINDOW_WIDTH / 2, 0);
@@ -212,22 +217,23 @@ void displayBackground() {
 	glColor3f(0, 0, 0);
 	glRectf(-40, 390, 40, 360);
 	glColor3ub(212, 0, 255);
-	vprint(-35, 370, GLUT_BITMAP_HELVETICA_18, "STAGE %d", stage);
+	if (stage < 11)
+		vprint(-35, 370, GLUT_BITMAP_HELVETICA_18, "STAGE %d", stage);
 
 	if (state == START) {
 		glColor3f(0, 0, 0);
 		glRectf(-50, -150, 50, -100);
 		glColor3f(1, 1, 0);
-		vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO START");
+		if (stage < 11)
+			vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO START");
+		else
+			vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO RETURN");
 	}
 
-	//time and best record
+	//time
 	glColor3f(0, 1, 0);
 	vprint(340, 380, GLUT_BITMAP_9_BY_15, "TIME");
-	vprint(320, 360, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", min2, min1, sec2, sec1, msec2, msec1);
-
-	vprint(340, 320, GLUT_BITMAP_9_BY_15, "BEST");
-	vprint(320, 300, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", recmin2, recmin1, recsec2, recsec1, recmsec2, recmsec1);
+	vprint(320, 360, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", timer[gameplay].min2, timer[gameplay].min1, timer[gameplay].sec2, timer[gameplay].sec1, timer[gameplay].msec2, timer[gameplay].msec1);
 }
 
 void object(target_t t, float radius) {
@@ -237,13 +243,13 @@ void object(target_t t, float radius) {
 	if (t.angle < 0)
 		t.angle += 360;
 	glColor3f(0, 0, 0);
-	vprint(-10 + (radius) * cos(t.angle * D2R), -10 + (radius) * sin(t.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", t.angle);
+	vprint(-10 + (radius)* cos(t.angle * D2R), -10 + (radius)* sin(t.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", t.angle);
 }
 
 void player(player_t pl) {
 	glColor3ub(255, 123, 0);
 	glLineWidth(6);
-	
+
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(-80 * cos((pl.angle - 45) * D2R), -80 * sin((pl.angle - 45) * D2R));
 	glVertex2f(-50 * cos((pl.angle - 45) * D2R), -50 * sin((pl.angle - 45) * D2R));
@@ -252,7 +258,7 @@ void player(player_t pl) {
 	glVertex2f(30 * cos((pl.angle - 90) * D2R), 30 * sin((pl.angle - 90) * D2R));
 	glVertex2f(-50 * cos((pl.angle + 45) * D2R), -50 * sin((pl.angle + 45) * D2R));
 	glVertex2f(-80 * cos((pl.angle + 45) * D2R), -80 * sin((pl.angle + 45) * D2R));
-	
+
 	glVertex2f(-55 * cos((pl.angle + 45) * D2R), -55 * sin((pl.angle + 45) * D2R));
 	glVertex2f(25 * cos((pl.angle - 90) * D2R), 25 * sin((pl.angle - 90) * D2R));
 	glVertex2f(45 * cos(pl.angle * D2R), 45 * sin(pl.angle * D2R));
@@ -359,6 +365,76 @@ bool testCollision(fire_t fr, target_t t, float radius) {
 	return d <= (t.radius);
 }
 
+void swap(timer_t *x, timer_t *y) {
+	timer_t temp = *x;
+	*x = *y;
+	*y = temp;
+}
+
+void bubbleSort(timer_t timer[], int n) {
+	int k, pass = 1, sort;
+	int num1, num2;
+	
+	do {
+		sort = 1;
+		for (k = 0; k < n - pass; k++) {
+			num1 = timer[k].min2 * 60000 + timer[k].min1 * 6000 + timer[k].sec2 * 1000 + timer[k].sec1 * 100 + timer[k].msec2 * 10 + timer[k].msec1;
+			num2 = timer[k + 1].min2 * 60000 + timer[k + 1].min1 * 6000 + timer[k + 1].sec2 * 1000 + timer[k + 1].sec1 * 100 + timer[k + 1].msec2 * 10 + timer[k + 1].msec1;
+			if (num1 > num2) {
+				swap(&timer[k], &timer[k + 1]);
+				sort = 0;
+			}
+		}
+		pass++;
+	} while (!sort);
+}
+
+void displayScoreBoard() {
+	glColor3f(0, 1, 0);
+	if (gameplay == 0)
+		vprint(-110, 0, GLUT_BITMAP_TIMES_ROMAN_24, "You haven't played yet!");
+	else {
+		bubbleSort(timer, gameplay);
+		for (int i = 0; i < gameplay; i++) {
+			vprint(-300, 350 - i * 50, GLUT_BITMAP_TIMES_ROMAN_24, "%d. %d%d:%d%d:%d%d", i + 1, timer[i].min2, timer[i].min1, timer[i].sec2, timer[i].sec1, timer[i].msec2, timer[i].msec1);
+		}
+	}
+	vprint(-100, -200, GLUT_BITMAP_TIMES_ROMAN_24, "Right Click to return");
+}
+
+void displayMenu() {
+	glColor3ub(0, 93, 255);
+	vprint2(-225, 250, 0.5, "Homework #3");
+
+	if (opt == PLAY) {
+		glColor3ub(0, 93, 255);
+		vprint(-50, 50, GLUT_BITMAP_TIMES_ROMAN_24, "START");
+	}
+	else {
+		glColor3f(1, 1, 1);
+		vprint(-50, 50, GLUT_BITMAP_TIMES_ROMAN_24, "START");
+	}
+	
+	if (opt == SCORE) {
+		glColor3ub(0, 93, 255);
+		vprint(-50, 0, GLUT_BITMAP_TIMES_ROMAN_24, "SCORE");
+	}
+	else {
+		glColor3f(1, 1, 1);
+		vprint(-50, 0, GLUT_BITMAP_TIMES_ROMAN_24, "SCORE");
+	}
+
+	if (opt == EXIT) {
+		glColor3ub(0, 93, 255);
+		vprint(-40, -50, GLUT_BITMAP_TIMES_ROMAN_24, "EXIT");
+	}
+	else {
+		glColor3f(1, 1, 1);
+		vprint(-40, -50, GLUT_BITMAP_TIMES_ROMAN_24, "EXIT");
+	}
+	
+	
+}
 //
 // To display onto window using OpenGL commands
 //
@@ -368,15 +444,22 @@ void display() {
 	//
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
+	
+	if (state == MENU)
+		displayMenu();
+	else if (state == SCOREBOARD)
+		displayScoreBoard();
+	else {
+		displayBackground();
+		//angle next to orbit
+		vprint(370 * cos(pl.angle * D2R), 370 * sin(pl.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", pl.angle);
 
-	displayBackground();
-	//angle next to orbit
-	vprint(370 * cos(pl.angle * D2R), 370 * sin(pl.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", pl.angle);
+		player(pl);
+		fire();
+	}
 
-	player(pl);
-	fire();
-
-	if (state == RUN) {
+	if (state == RUN && stage != 11) {
+		
 		float radius = 250;
 		for (int i = 0; i < 3; i++) {
 			if (testCollision(fr, target[i], radius)) {
@@ -386,55 +469,33 @@ void display() {
 				object(target[i], radius);
 			radius += 50;
 		}
-	}
 
-	//initialize
-	if (state == RUN && target[0].hit && target[1].hit &&target[2].hit) {
-		fireloader = 0;
-		fr.active = false;
-		strength = 10;
-		fr.pos.x = 0;
-		fr.pos.y = 0;
-		for (int i = 0; i < 3; i++) {
-			target[i].color.r = rand() % 256;
-			target[i].color.g = rand() % 256;
-			target[i].color.b = rand() % 256;
-			target[i].direction = rand() & 1;
-			target[i].angle = rand() % 361;
-			//speed gets faster as after every stage
-			target[i].speed = rand() % (1 + stage) + 1;
-			target[i].hit = false;
-			target[i].radius = rand() % 11 + 20;
-		}
-
-		if (stage != 1) {
-			//compare current time & best record
-			int rectime = recmin2 * 60000 + recmin1 * 6000 + recsec2 * 1000 + recsec1 * 100 + recmsec2 * 10 + recmsec1;
-			int time = min2 * 60000 + min1 * 6000 + sec2 * 1000 + sec1 * 100 + msec2 * 10 + msec1;
-			if (time < rectime) {
-				recmin2 = min2;
-				recmin1 = min1;
-				recsec2 = sec2;
-				recsec1 = sec1;
-				recmsec2 = msec2;
-				recmsec1 = msec1;
+		//initialize
+		if (target[0].hit && target[1].hit && target[2].hit) {
+			fireloader = 0;
+			fr.active = false;
+			strength = 10;
+			fr.pos.x = 0;
+			fr.pos.y = 0;
+			for (int i = 0; i < 3; i++) {
+				target[i].color.r = rand() % 256;
+				target[i].color.g = rand() % 256;
+				target[i].color.b = rand() % 256;
+				target[i].direction = rand() & 1;
+				target[i].angle = rand() % 361;
+				//speed gets faster as after every stage
+				target[i].speed = rand() % (1 + stage) + 1;
+				target[i].hit = false;
+				target[i].radius = rand() % 11 + 20;
 			}
-		}
 
-		//if stage is one, simply copy time as best record
-		else {
-			recmin2 = min2;
-			recmin1 = min1;
-			recsec2 = sec2;
-			recsec1 = sec1;
-			recmsec2 = msec2;
-			recmsec1 = msec1;
+			//add stage after completing each time
+			stage++;
+			state = START;
 		}
-
-		//add stage after completing each time
-		stage++;
-		state = START;
 	}
+
+
 
 	glutSwapBuffers();
 }
@@ -507,9 +568,44 @@ void onSpecialKeyUp(int key, int x, int y)
 void onClick(int button, int stat, int x, int y)
 {
 	// Write your codes here.
+	if (state == MENU) {
+		if (opt == PLAY && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN)
+			state = START;
+		else if (opt == SCORE && button == GLUT_LEFT_BUTTON && stat == GLUT_UP)
+			state = SCOREBOARD;
+		else if (opt == EXIT && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN)
+			exit(0);
+	}
+
+	if (state == SCOREBOARD && button == GLUT_RIGHT_BUTTON && stat == GLUT_DOWN)
+		state = MENU;
+
 	if (state == START && button == GLUT_LEFT_BUTTON && stat == GLUT_UP) {
-		state = RUN;
-		min2 = min1 = sec2 = sec1 = msec2 = msec1 = 0;
+		if (stage == 11) {
+			state = MENU;
+			gameplay++;
+			
+			//initialize
+			stage = 0;
+			fireloader = 0;
+			fr.active = false;
+			strength = 10;
+			fr.pos.x = 0;
+			fr.pos.y = 0;
+			for (int i = 0; i < 3; i++) {
+				target[i].color.r = rand() % 256;
+				target[i].color.g = rand() % 256;
+				target[i].color.b = rand() % 256;
+				target[i].direction = rand() & 1;
+				target[i].angle = rand() % 361;
+				//speed gets faster as after every stage
+				target[i].speed = rand() % (1 + stage) + 1;
+				target[i].hit = false;
+				target[i].radius = rand() % 11 + 20;
+			}
+		}
+		else
+			state = RUN;
 	}
 	//increase speed while holding
 	else if (state == RUN && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN) {
@@ -550,9 +646,8 @@ void onResize(int w, int h)
 }
 
 int getMouseAngle(int x, int y) {
-	int x2 = x - winWidth / 2;
-	int y2 = winHeight / 2 - y;
-	int angle = (atan2f(y2, x2)) * (180 / PI);
+	
+	int angle = (atan2f(y, x)) * (180 / PI);
 	if (angle < 0)
 		angle += 360;
 
@@ -561,7 +656,9 @@ int getMouseAngle(int x, int y) {
 
 void onMoveDown(int x, int y) {
 	// Write your codes here.
-	pl.angle = getMouseAngle(x, y);
+	int x2 = x - winWidth / 2;
+	int y2 = winHeight / 2 - y;
+	pl.angle = getMouseAngle(x2, y2);
 
 
 	// to refresh the window it calls display() function   
@@ -574,18 +671,26 @@ void onMoveDown(int x, int y) {
 //   y2 = winHeight / 2 - y1
 void onMove(int x, int y) {
 	// Write your codes here.
-	pl.angle = getMouseAngle(x, y);
+	int x2 = x - winWidth / 2;
+	int y2 = winHeight / 2 - y;
+
+	if (state == MENU) {
+		if (x2 >= -50 && x2 <= 50 && y2 >= 50 && y2 <= 75)
+			opt = PLAY;
+		else if (x2 >= -50 && x2 <= 50 && y2 >= 0 && y2 <= 25)
+			opt = SCORE;
+		else if (x2 >= -40 && x2 <= 40 && y2 >= -50 && y2 <= -25)
+			opt = EXIT;
+		else
+			opt = OUT;
+	}
+	pl.angle = getMouseAngle(x2, y2);
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
 }
 
 #if TIMER_ON == 1
 void onTimer(int v) {
-
-	//aiming animation
-	lock++;
-	if (lock == 50)
-		lock = 0;
 
 	if (pressed) {
 		if (strength < 100)
@@ -602,6 +707,11 @@ void onTimer(int v) {
 	// Write your codes here.
 
 	if (state == RUN) {
+		//aiming animation
+		lock++;
+		if (lock == 50)
+			lock = 0;
+
 		for (int i = 0; i < 3; i++) {
 			//clockwise or counter clockwise
 			if (target[i].direction)
@@ -629,23 +739,23 @@ void onTimer(int v) {
 		}
 
 		//time
-		if (msec1 == 9) {
-			msec2++;
-			msec1 = 0;
-			if (msec2 == 10) {
-				sec1++;
-				msec2 = 0;
+		if (timer[gameplay].msec1 == 9) {
+			timer[gameplay].msec2++;
+			timer[gameplay].msec1 = 0;
+			if (timer[gameplay].msec2 == 10) {
+				timer[gameplay].sec1++;
+				timer[gameplay].msec2 = 0;
 			}
 		}
-		if (sec1 == 10) {
-			sec1 = 0;
-			sec2++;
-			if (sec2 == 6) {
-				min1++;
-				sec2 = 0;
+		if (timer[gameplay].sec1 == 10) {
+			timer[gameplay].sec1 = 0;
+			timer[gameplay].sec2++;
+			if (timer[gameplay].sec2 == 6) {
+				timer[gameplay].min1++;
+				timer[gameplay].sec2 = 0;
 			}
 		}
-		msec1++;
+		timer[gameplay].msec1++;
 	}
 	// to refresh the window it calls display() function
 	glutPostRedisplay(); // display()
@@ -654,7 +764,7 @@ void onTimer(int v) {
 #endif
 
 void Init() {
-	
+
 	// Smoothing shapes
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -704,6 +814,6 @@ void main(int argc, char *argv[]) {
 #endif
 
 	Init();
-	
+
 	glutMainLoop();
 }
