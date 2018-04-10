@@ -31,18 +31,21 @@ NOTE: Each gameplay requires player to pass 10 stages
 #define WINDOW_HEIGHT 800
 
 #define TIMER_PERIOD  16 // Period for the timer.
+#define TIMER_PERIOD2 10
 #define TIMER_ON         1 // 0:disable timer, 1:enable timer
 
 #define D2R 0.0174532
 
 enum stat {MENU, START, RUN, SCOREBOARD};
+
+//status when hovering items on menu
 enum opt {OUT, PLAY, SCORE, EXIT};
 
 //state
 int state = MENU;
 int opt = OUT;
 
-//scoreboard
+//gameplay
 int gameplay = 0;
 
 //stage level
@@ -54,7 +57,6 @@ typedef struct {
 } timer_t;
 
 timer_t timer[100];
-//int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
 
 //dotted lines animation
 int lock = 0;
@@ -394,9 +396,11 @@ void bubbleSort(timer_t timer[], int n) {
 
 void displayScoreBoard() {
 	glColor3f(0, 1, 0);
+	//if there is no game record
 	if (gameplay == 0)
 		vprint(-110, 0, GLUT_BITMAP_TIMES_ROMAN_24, "You haven't played yet!");
 	else {
+		//sort the existing records in descending order
 		bubbleSort(timer, gameplay);
 		for (int i = 0; i < gameplay; i++) {
 			vprint(-300, 350 - i * 50, GLUT_BITMAP_TIMES_ROMAN_24, "%d. %d%d:%d%d:%d%d", i + 1, timer[i].min2, timer[i].min1, timer[i].sec2, timer[i].sec1, timer[i].msec2, timer[i].msec1);
@@ -693,7 +697,35 @@ void onMove(int x, int y) {
 }
 
 #if TIMER_ON == 1
+void onTimer2(int v) {
+	glutTimerFunc(TIMER_PERIOD2, onTimer2, 0);
+	if (state == RUN) {
+		if (timer[gameplay].msec1 == 9) {
+			timer[gameplay].msec2++;
+			timer[gameplay].msec1 = 0;
+			if (timer[gameplay].msec2 == 10) {
+				timer[gameplay].sec1++;
+				timer[gameplay].msec2 = 0;
+			}
+		}
+		if (timer[gameplay].sec1 == 10) {
+			timer[gameplay].sec1 = 0;
+			timer[gameplay].sec2++;
+			if (timer[gameplay].sec2 == 6) {
+				timer[gameplay].min1++;
+				timer[gameplay].sec2 = 0;
+			}
+		}
+		timer[gameplay].msec1++;
+	}
+}
+#endif
+
+#if TIMER_ON == 1
 void onTimer(int v) {
+
+	glutTimerFunc(TIMER_PERIOD, onTimer, 0);
+	// Write your codes here.
 
 	if (pressed) {
 		if (strength < 100)
@@ -705,9 +737,6 @@ void onTimer(int v) {
 			maxpow.b = rand() % 256;
 		}
 	}
-
-	glutTimerFunc(TIMER_PERIOD, onTimer, 0);
-	// Write your codes here.
 
 	if (state == RUN) {
 		//aiming animation
@@ -741,24 +770,6 @@ void onTimer(int v) {
 			}
 		}
 
-		//time
-		if (timer[gameplay].msec1 == 9) {
-			timer[gameplay].msec2++;
-			timer[gameplay].msec1 = 0;
-			if (timer[gameplay].msec2 == 10) {
-				timer[gameplay].sec1++;
-				timer[gameplay].msec2 = 0;
-			}
-		}
-		if (timer[gameplay].sec1 == 10) {
-			timer[gameplay].sec1 = 0;
-			timer[gameplay].sec2++;
-			if (timer[gameplay].sec2 == 6) {
-				timer[gameplay].min1++;
-				timer[gameplay].sec2 = 0;
-			}
-		}
-		timer[gameplay].msec1++;
 	}
 	// to refresh the window it calls display() function
 	glutPostRedisplay(); // display()
@@ -813,6 +824,7 @@ void main(int argc, char *argv[]) {
 
 #if  TIMER_ON == 1
 	// timer event
+	glutTimerFunc(TIMER_PERIOD2, onTimer2, 0);
 	glutTimerFunc(TIMER_PERIOD, onTimer, 0);
 #endif
 
