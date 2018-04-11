@@ -390,7 +390,7 @@ void initialize() {
 		target[i].color.b = rand() % 256;
 		target[i].direction = rand() & 1;
 		target[i].angle = rand() % 361;
-		//speed gets faster as after every stage
+		//speed gets faster after every stage
 		target[i].speed = rand() % (1 + stage) + 1;
 		target[i].hit = false;
 		target[i].radius = rand() % 11 + 20;
