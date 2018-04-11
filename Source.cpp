@@ -16,7 +16,8 @@ ADDITIONAL FEATURES:
 -Aiming dotted line animation
 -As player presses mouse longer fire will be faster
 
-NOTE: Each gameplay requires player to pass 10 stages
+NOTE:   -Each gameplay requires player to pass 10 stages
+		-Press F1 to return back to menu
 *********/
 
 #include <GL/glut.h>
@@ -198,8 +199,8 @@ void displayBackground() {
 	glColor3ub(212, 0, 255);
 
 	//Name info
-	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 20, GLUT_BITMAP_9_BY_15, "Homework #3");
-	vprint(-WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 40, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
+	vprint(-400, 380, GLUT_BITMAP_9_BY_15, "Homework #3");
+	vprint(-400, 360, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
 
 	//white
 	glColor3f(1, 1, 1);
@@ -218,15 +219,16 @@ void displayBackground() {
 	glVertex2f(0, -WINDOW_HEIGHT);
 	glEnd();
 
-	//stage number
-	glColor3f(0, 0, 0);
-	glRectf(-40, 390, 40, 360);
-	glColor3ub(212, 0, 255);
-	if (stage < 11)
+	//display stage number during gameplay
+	if (stage < 11) {
+		glColor3f(0.2, 0.2, 0.2);
+		glRectf(-40, 390, 40, 360);
+		glColor3ub(212, 0, 255);
 		vprint(-35, 370, GLUT_BITMAP_HELVETICA_18, "STAGE %d", stage);
+	}
 
 	if (state == START) {
-		glColor3f(0, 0, 0);
+		glColor3f(0.2, 0.2, 0.2);
 		glRectf(-50, -150, 50, -100);
 		glColor3f(1, 1, 0);
 		if (stage < 11)
@@ -239,6 +241,9 @@ void displayBackground() {
 	glColor3f(0, 1, 0);
 	vprint(340, 380, GLUT_BITMAP_9_BY_15, "TIME");
 	vprint(320, 360, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", timer[gameplay].min2, timer[gameplay].min1, timer[gameplay].sec2, timer[gameplay].sec1, timer[gameplay].msec2, timer[gameplay].msec1);
+
+	//f1 to return
+	vprint(-400, 340, GLUT_BITMAP_9_BY_15, "Press F1 to return");
 }
 
 void object(target_t t, float radius) {
@@ -340,7 +345,7 @@ void fire() {
 		glColor3ub(206, 237, 236);
 		circle(fr.pos.x, fr.pos.y, 5);
 
-		glColor3f(0, 0, 0);
+		glColor3f(0.2, 0.2, 0.2);
 		glRectf(-50, 160, 50, 130);
 
 		glColor3f(0, 1, 0);
@@ -370,6 +375,25 @@ bool testCollision(fire_t fr, target_t t, float radius) {
 	return d <= (t.radius);
 }
 
+void initialize() {
+	fireloader = 0;
+	fr.active = false;
+	strength = 10;
+	fr.pos.x = 0;
+	fr.pos.y = 0;
+	for (int i = 0; i < 3; i++) {
+		target[i].color.r = rand() % 256;
+		target[i].color.g = rand() % 256;
+		target[i].color.b = rand() % 256;
+		target[i].direction = rand() & 1;
+		target[i].angle = rand() % 361;
+		//speed gets faster as after every stage
+		target[i].speed = rand() % (1 + stage) + 1;
+		target[i].hit = false;
+		target[i].radius = rand() % 11 + 20;
+	}
+}
+
 void swap(timer_t *x, timer_t *y) {
 	timer_t temp = *x;
 	*x = *y;
@@ -395,7 +419,9 @@ void bubbleSort(timer_t timer[], int n) {
 }
 
 void displayScoreBoard() {
-	glColor3f(0, 1, 0);
+	//green
+	glColor3f(0.1215686274509804, 0.8666666666666667, 0.5686274509803922);
+
 	//if there is no game record
 	if (gameplay == 0)
 		vprint(-110, 0, GLUT_BITMAP_TIMES_ROMAN_24, "You haven't played yet!");
@@ -410,6 +436,8 @@ void displayScoreBoard() {
 }
 
 void displayMenu() {
+	glClearColor(0.1215686274509804, 0.8666666666666667, 0.5686274509803922, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3ub(0, 93, 255);
 	vprint2(-225, 250, 0.5, "Homework #3");
 
@@ -449,9 +477,9 @@ void display() {
 	//
 	// clear window to black
 	//
-	glClearColor(0, 0, 0, 0);
+	glClearColor(0.2, 0.2, 0.2, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	
+
 	if (state == MENU)
 		displayMenu();
 	else if (state == SCOREBOARD)
@@ -479,22 +507,7 @@ void display() {
 
 		//initialize
 		if (target[0].hit && target[1].hit && target[2].hit) {
-			fireloader = 0;
-			fr.active = false;
-			strength = 10;
-			fr.pos.x = 0;
-			fr.pos.y = 0;
-			for (int i = 0; i < 3; i++) {
-				target[i].color.r = rand() % 256;
-				target[i].color.g = rand() % 256;
-				target[i].color.b = rand() % 256;
-				target[i].direction = rand() & 1;
-				target[i].angle = rand() % 361;
-				//speed gets faster as after every stage
-				target[i].speed = rand() % (1 + stage) + 1;
-				target[i].hit = false;
-				target[i].radius = rand() % 11 + 20;
-			}
+			initialize();
 
 			//add stage after completing each time
 			stage++;
@@ -541,6 +554,15 @@ void onSpecialKeyDown(int key, int x, int y)
 	case GLUT_KEY_DOWN: down = true; break;
 	case GLUT_KEY_LEFT: left = true; break;
 	case GLUT_KEY_RIGHT: right = true; break;
+	case GLUT_KEY_F1:
+		if (state == START || state == RUN) {
+			//return back to menu
+			state = MENU;
+
+			//initialize
+			initialize();
+			timer[gameplay].min2 = timer[gameplay].min1 = timer[gameplay].sec2 = timer[gameplay].sec1 = timer[gameplay].msec2 = timer[gameplay].msec1 = 0;
+		}
 	}
 
 	// to refresh the window it calls display() function
@@ -594,22 +616,7 @@ void onClick(int button, int stat, int x, int y)
 			
 			//initialize
 			stage = 0;
-			fireloader = 0;
-			fr.active = false;
-			strength = 10;
-			fr.pos.x = 0;
-			fr.pos.y = 0;
-			for (int i = 0; i < 3; i++) {
-				target[i].color.r = rand() % 256;
-				target[i].color.g = rand() % 256;
-				target[i].color.b = rand() % 256;
-				target[i].direction = rand() & 1;
-				target[i].angle = rand() % 361;
-				//speed gets faster as after every stage
-				target[i].speed = rand() % (1 + stage) + 1;
-				target[i].hit = false;
-				target[i].radius = rand() % 11 + 20;
-			}
+			initialize();
 		}
 		else
 			state = RUN;
@@ -760,7 +767,7 @@ void onTimer(int v) {
 		if (fr.active) {
 			fr.pos.x += strength * cos(fr.angle * D2R);
 			fr.pos.y += strength * sin(fr.angle * D2R);
-			fireloader += 5;
+			fireloader += strength / 2;
 
 			//when fire reaches the border
 			if (fr.pos.x > 400 || fr.pos.x < -400 || fr.pos.y > 400 || fr.pos.y < -400) {
@@ -778,7 +785,6 @@ void onTimer(int v) {
 #endif
 
 void Init() {
-
 	// Smoothing shapes
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
