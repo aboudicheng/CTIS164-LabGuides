@@ -245,7 +245,8 @@ void displayBackground() {
 	vprint(320, 360, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", timer[gameplay].min2, timer[gameplay].min1, timer[gameplay].sec2, timer[gameplay].sec1, timer[gameplay].msec2, timer[gameplay].msec1);
 
 	//f1 to return
-	vprint(-400, 340, GLUT_BITMAP_9_BY_15, "Press F1 to return");
+	if (stage != 11)
+		vprint(-400, 340, GLUT_BITMAP_9_BY_15, "Press F1 to return");
 }
 
 void object(target_t t, float radius) {
@@ -559,12 +560,14 @@ void onSpecialKeyDown(int key, int x, int y)
 	case GLUT_KEY_RIGHT: right = true; break;
 	case GLUT_KEY_F1:
 		if (state == START || state == RUN) {
-			//return back to menu
-			state = MENU;
+			if (stage != 11) {
+				//return back to menu
+				state = MENU;
 
-			//initialize
-			initialize();
-			timer[gameplay].min2 = timer[gameplay].min1 = timer[gameplay].sec2 = timer[gameplay].sec1 = timer[gameplay].msec2 = timer[gameplay].msec1 = 0;
+				//initialize
+				initialize();
+				timer[gameplay].min2 = timer[gameplay].min1 = timer[gameplay].sec2 = timer[gameplay].sec1 = timer[gameplay].msec2 = timer[gameplay].msec1 = 0;
+			}
 		}
 	}
 
@@ -748,11 +751,15 @@ void onTimer(int v) {
 		}
 	}
 
-	if (state == RUN) {
+	if (state != MENU || state != SCOREBOARD) {
 		//aiming animation
 		lock++;
 		if (lock == 50)
 			lock = 0;
+	}
+
+	if (state == RUN) {
+		
 
 		for (int i = 0; i < 3; i++) {
 			//clockwise or counter clockwise
