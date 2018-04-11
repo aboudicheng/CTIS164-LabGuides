@@ -583,6 +583,7 @@ void onSpecialKeyDown(int key, int x, int y)
 
 				//initialize
 				initialize();
+				stage = 1;
 				timer[gameplay].min2 = timer[gameplay].min1 = timer[gameplay].sec2 = timer[gameplay].sec1 = timer[gameplay].msec2 = timer[gameplay].msec1 = 0;
 			}
 		}
