@@ -194,6 +194,24 @@ void vprint2(int x, int y, float size, char *string, ...) {
 	glPopMatrix();
 }
 
+void drawGradient(int x1, int y1, int w, int h, float r, float g, float b) {
+	glBegin(GL_QUADS);
+	glColor3ub(r, g, b);
+	glVertex2f(x1, y1);
+	glVertex2f(x1 + w, y1);
+	glColor3ub(r + 102, g + 102, b + 102);
+	glVertex2f(x1 + w, y1 - h);
+	glVertex2f(x1, y1 - h);
+	glEnd();
+	glColor3f(0.1, 0.1, 0.1);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(x1, y1);
+	glVertex2f(x1 + w, y1);
+	glVertex2f(x1 + w, y1 - h);
+	glVertex2f(x1, y1 - h);
+	glEnd();
+}
+
 void displayBackground() {
 
 	glColor3ub(212, 0, 255);
@@ -440,9 +458,8 @@ void displayScoreBoard() {
 }
 
 void displayMenu() {
-	glClearColor(0.1215686274509804, 0.8666666666666667, 0.5686274509803922, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glColor3ub(0, 93, 255);
+	drawGradient(-400, 400, 800, 800, 88, 171, 226);
+	glColor3ub(242, 41, 198);
 	vprint2(-225, 250, 0.5, "Homework #3");
 
 	if (opt == PLAY) {
