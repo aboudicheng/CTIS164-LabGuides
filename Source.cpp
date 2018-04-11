@@ -231,10 +231,12 @@ void displayBackground() {
 		glColor3f(0.2, 0.2, 0.2);
 		glRectf(-50, -150, 50, -100);
 		glColor3f(1, 1, 0);
-		if (stage < 11)
+		if (stage < 11) 
 			vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO START");
-		else
+		else {
 			vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO RETURN");
+			vprint2(-175, 130, 0.3, "CONGRATULATIONS!");
+		}
 	}
 
 	//time
@@ -354,15 +356,15 @@ void fire() {
 	}
 	else {
 		if (pressed) {
-			if (strength > 20) {
+			if (strength > 15) {
 				//while pressing keep the color as red
-				if (strength * 2 < 200)
+				if (strength * 4 < 200)
 					glColor3f(1, 1, 0);
 				//color shines when it reaches max
 				else
 					glColor3ub(maxpow.r, maxpow.g, maxpow.b);
 
-				glRectf(-100, -120, -100 + strength * 2, -100);
+				glRectf(-100, -120, -100 + strength * 4, -100);
 			}
 		}
 	}
@@ -372,7 +374,8 @@ bool testCollision(fire_t fr, target_t t, float radius) {
 	float dx = radius * cos(t.angle * D2R) - fr.pos.x;
 	float dy = radius * sin(t.angle * D2R) - fr.pos.y;
 	float d = sqrt(dx*dx + dy*dy);
-	return d <= (t.radius);
+	//make it slightly easier
+	return d <= (t.radius + 5);
 }
 
 void initialize() {
@@ -735,7 +738,7 @@ void onTimer(int v) {
 	// Write your codes here.
 
 	if (pressed) {
-		if (strength < 100)
+		if (strength < 50)
 			strength += 1;
 		else {
 			//maxpower color animation
