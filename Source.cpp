@@ -496,11 +496,11 @@ void displayMenu() {
 
 void chooseName() {
 	glColor3f(1, 1, 1);
-	glRectf(-100, 40, 100, 60);
+	glRectf(-120, 40, 120, 60);
 
 	glColor3ub(255, 131, 0);
 	vprint(-120, 200, GLUT_BITMAP_HELVETICA_18, "Please type down your name");
-	vprint(-95, 45, GLUT_BITMAP_HELVETICA_18, "%s", playerN);
+	vprint(-115, 45, GLUT_BITMAP_HELVETICA_18, "%s", playerN);
 	vprint(-110, -100, GLUT_BITMAP_HELVETICA_18, "Press <Enter> to continue");
 }
 //
