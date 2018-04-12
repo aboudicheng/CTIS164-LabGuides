@@ -9,15 +9,16 @@ PROBLEMS:
 ----------
 ADDITIONAL FEATURES:
 -Menu
+-Naming for player
 -Timer
--Scoreboard using bubble sorting algorithm
--Stage system
+-Scoreboard using bubble sorting algorithm according to the time used in each gameplay
+-Stage system (10 in total)
 -Harder after each stage (objects get more likely to move faster)
 -Aiming dotted line animation
 -As player presses mouse longer fire will be faster
 
 NOTE:   -Each gameplay requires player to pass 10 stages
--Press F1 to return back to menu
+		-Press F1 to return back to menu
 *********/
 
 #include <GL/glut.h>
