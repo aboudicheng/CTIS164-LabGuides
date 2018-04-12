@@ -37,7 +37,7 @@ NOTE:   -Each gameplay requires player to pass 10 stages
 
 #define D2R 0.0174532
 
-enum stat { MENU, START, RUN, SCOREBOARD };
+enum stat { MENU, NAME, START, RUN, SCOREBOARD };
 
 //status when hovering items on menu
 enum opt { OUT, PLAY, SCORE, EXIT };
@@ -57,6 +57,7 @@ char playerN[100] = "";
 //timer
 typedef struct {
 	int min1 = 0, min2 = 0, sec1 = 0, sec2 = 0, msec1 = 0, msec2 = 0;
+	char name[100] = "";
 } timer_t;
 
 timer_t timer[100];
@@ -264,9 +265,11 @@ void displayBackground() {
 	vprint(340, 380, GLUT_BITMAP_9_BY_15, "TIME");
 	vprint(320, 360, GLUT_BITMAP_9_BY_15, "%d%d:%d%d:%d%d", timer[gameplay].min2, timer[gameplay].min1, timer[gameplay].sec2, timer[gameplay].sec1, timer[gameplay].msec2, timer[gameplay].msec1);
 
+	//player name
+	vprint(-400, 340, GLUT_BITMAP_9_BY_15, "Player: %s", playerN);
 	//f1 to return
 	if (stage != 11)
-		vprint(-400, 340, GLUT_BITMAP_9_BY_15, "Press F1 to return");
+		vprint(-400, 320, GLUT_BITMAP_9_BY_15, "Press F1 to return");
 }
 
 void object(target_t t, float radius) {
@@ -279,8 +282,6 @@ void object(target_t t, float radius) {
 	vprint(-10 + (radius)* cos(t.angle * D2R), -10 + (radius)* sin(t.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", t.angle);
 }
 
-//X = x*cos(a) - y*sin(a)
-//Y = x*sin(a) + y*cos(a)
 void player(player_t pl) {
 	glColor3ub(255, 123, 0);
 	glLineWidth(6);
@@ -451,6 +452,7 @@ void displayScoreBoard() {
 		bubbleSort(timer, gameplay);
 		for (int i = 0; i < gameplay; i++) {
 			vprint(-300, 350 - i * 50, GLUT_BITMAP_TIMES_ROMAN_24, "%d. %d%d:%d%d:%d%d", i + 1, timer[i].min2, timer[i].min1, timer[i].sec2, timer[i].sec1, timer[i].msec2, timer[i].msec1);
+			vprint(-150, 350 - i * 50, GLUT_BITMAP_TIMES_ROMAN_24, "%s", timer[i].name);
 		}
 	}
 	vprint(-100, -200, GLUT_BITMAP_TIMES_ROMAN_24, "Right Click to return");
@@ -458,7 +460,7 @@ void displayScoreBoard() {
 
 void displayMenu() {
 	drawGradient(-400, 400, 800, 800, 88, 171, 226);
-	glColor3ub(242, 41, 198);
+	glColor3ub(4, 255, 0);
 	vprint2(-225, 250, 0.5, "Homework #3");
 
 	if (opt == PLAY) {
@@ -490,6 +492,16 @@ void displayMenu() {
 
 
 }
+
+void chooseName() {
+	glColor3f(1, 1, 1);
+	glRectf(-100, 40, 100, 60);
+
+	glColor3ub(255, 131, 0);
+	vprint(-120, 200, GLUT_BITMAP_HELVETICA_18, "Please type down your name");
+	vprint(-95, 45, GLUT_BITMAP_HELVETICA_18, "%s", playerN);
+	vprint(-110, -100, GLUT_BITMAP_HELVETICA_18, "Press <Enter> to continue");
+}
 //
 // To display onto window using OpenGL commands
 //
@@ -502,6 +514,8 @@ void display() {
 
 	if (state == MENU)
 		displayMenu();
+	else if (state == NAME)
+		chooseName();
 	else if (state == SCOREBOARD)
 		displayScoreBoard();
 	else {
@@ -556,7 +570,21 @@ void onKeyDown(unsigned char key, int x, int y)
 	if (key == 27)
 		exit(0);
 
-	append(playerN, key);
+	if (state == NAME) {
+		if (key == 13 && strlen(playerN) > 1) {
+			state = START;
+			strcpy(timer[gameplay].name, playerN);
+		}
+		else {
+			//type
+			if (strlen(playerN) < 20)
+				append(playerN, key);
+			//delete
+			if (key == 8 && strlen(playerN) > 1)
+				playerN[strlen(playerN) - 2] = '\0';
+		}
+	}
+	
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
 }
@@ -591,6 +619,7 @@ void onSpecialKeyDown(int key, int x, int y)
 
 				//initialize
 				initialize();
+				strcpy(playerN, "");
 				stage = 1;
 				timer[gameplay].min2 = timer[gameplay].min1 = timer[gameplay].sec2 = timer[gameplay].sec1 = timer[gameplay].msec2 = timer[gameplay].msec1 = 0;
 			}
@@ -631,7 +660,7 @@ void onClick(int button, int stat, int x, int y)
 	// Write your codes here.
 	if (state == MENU) {
 		if (opt == PLAY && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN)
-			state = START;
+			state = NAME;
 		else if (opt == SCORE && button == GLUT_LEFT_BUTTON && stat == GLUT_UP)
 			state = SCOREBOARD;
 		else if (opt == EXIT && button == GLUT_LEFT_BUTTON && stat == GLUT_DOWN)
@@ -648,6 +677,7 @@ void onClick(int button, int stat, int x, int y)
 
 			//initialize
 			stage = 0;
+			strcpy(playerN, "");
 			initialize();
 		}
 		else
