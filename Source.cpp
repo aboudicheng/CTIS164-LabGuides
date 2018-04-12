@@ -17,7 +17,7 @@ ADDITIONAL FEATURES:
 -As player presses mouse longer fire will be faster
 
 NOTE:   -Each gameplay requires player to pass 10 stages
-		-Press F1 to return back to menu
+-Press F1 to return back to menu
 *********/
 
 #include <GL/glut.h>
@@ -37,10 +37,10 @@ NOTE:   -Each gameplay requires player to pass 10 stages
 
 #define D2R 0.0174532
 
-enum stat {MENU, START, RUN, SCOREBOARD};
+enum stat { MENU, START, RUN, SCOREBOARD };
 
 //status when hovering items on menu
-enum opt {OUT, PLAY, SCORE, EXIT};
+enum opt { OUT, PLAY, SCORE, EXIT };
 
 //state
 int state = MENU;
@@ -51,6 +51,8 @@ int gameplay = 0;
 
 //stage level
 int stage = 1;
+
+char playerN[100] = "";
 
 //timer
 typedef struct {
@@ -249,7 +251,7 @@ void displayBackground() {
 		glColor3f(0.2, 0.2, 0.2);
 		glRectf(-50, -150, 50, -100);
 		glColor3f(1, 1, 0);
-		if (stage < 11) 
+		if (stage < 11)
 			vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO START");
 		else {
 			vprint(-60, -130, GLUT_BITMAP_9_BY_15, "CLICK TO RETURN");
@@ -277,10 +279,13 @@ void object(target_t t, float radius) {
 	vprint(-10 + (radius)* cos(t.angle * D2R), -10 + (radius)* sin(t.angle * D2R), GLUT_BITMAP_9_BY_15, "%.0f", t.angle);
 }
 
+//X = x*cos(a) - y*sin(a)
+//Y = x*sin(a) + y*cos(a)
 void player(player_t pl) {
 	glColor3ub(255, 123, 0);
 	glLineWidth(6);
 
+	
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(-80 * cos((pl.angle - 45) * D2R), -80 * sin((pl.angle - 45) * D2R));
 	glVertex2f(-50 * cos((pl.angle - 45) * D2R), -50 * sin((pl.angle - 45) * D2R));
@@ -296,12 +301,6 @@ void player(player_t pl) {
 	glVertex2f(25 * cos((pl.angle + 90) * D2R), 25 * sin((pl.angle + 90) * D2R));
 	glVertex2f(-55 * cos((pl.angle - 45) * D2R), -55 * sin((pl.angle - 45) * D2R));
 	glVertex2f(-85 * cos((pl.angle - 45) * D2R), -85 * sin((pl.angle - 45) * D2R));
-	glEnd();
-
-	glBegin(GL_LINES);
-	glColor3f(1, 1, 1);
-	glVertex2f(-50 * cos((pl.angle - 45) * D2R), -50 * sin((pl.angle - 45) * D2R));
-	glVertex2f(-50 * cos((pl.angle + 45) * D2R), -50 * sin((pl.angle + 45) * D2R));
 	glEnd();
 
 	glLineWidth(2);
@@ -425,7 +424,7 @@ void swap(timer_t *x, timer_t *y) {
 void bubbleSort(timer_t timer[], int n) {
 	int k, pass = 1, sort;
 	int num1, num2;
-	
+
 	do {
 		sort = 1;
 		for (k = 0; k < n - pass; k++) {
@@ -470,7 +469,7 @@ void displayMenu() {
 		glColor3f(1, 1, 1);
 		vprint(-50, 50, GLUT_BITMAP_TIMES_ROMAN_24, "START");
 	}
-	
+
 	if (opt == SCORE) {
 		glColor3ub(0, 93, 255);
 		vprint(-50, 0, GLUT_BITMAP_TIMES_ROMAN_24, "SCORE");
@@ -488,8 +487,8 @@ void displayMenu() {
 		glColor3f(1, 1, 1);
 		vprint(-40, -50, GLUT_BITMAP_TIMES_ROMAN_24, "EXIT");
 	}
-	
-	
+
+
 }
 //
 // To display onto window using OpenGL commands
@@ -515,7 +514,7 @@ void display() {
 	}
 
 	if (state == RUN && stage != 11) {
-		
+
 		float radius = 250;
 		for (int i = 0; i < 3; i++) {
 			if (testCollision(fr, target[i], radius)) {
@@ -541,6 +540,13 @@ void display() {
 	glutSwapBuffers();
 }
 
+void append(char* s, char c)
+{
+	int len = strlen(s);
+	s[len] = c;
+	s[len + 1] = '\0';
+}
+
 //
 // key function for ASCII charachters like ESC, a,b,c..,A,B,..Z
 //
@@ -549,6 +555,8 @@ void onKeyDown(unsigned char key, int x, int y)
 	// exit when ESC is pressed.
 	if (key == 27)
 		exit(0);
+
+	append(playerN, key);
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
 }
@@ -637,7 +645,7 @@ void onClick(int button, int stat, int x, int y)
 		if (stage == 11) {
 			state = MENU;
 			gameplay++;
-			
+
 			//initialize
 			stage = 0;
 			initialize();
@@ -684,7 +692,7 @@ void onResize(int w, int h)
 }
 
 int getMouseAngle(int x, int y) {
-	
+
 	int angle = (atan2f(y, x)) * (180 / PI);
 	if (angle < 0)
 		angle += 360;
@@ -777,7 +785,7 @@ void onTimer(int v) {
 	}
 
 	if (state == RUN) {
-		
+
 
 		for (int i = 0; i < 3; i++) {
 			//clockwise or counter clockwise
