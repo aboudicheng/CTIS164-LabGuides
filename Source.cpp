@@ -48,11 +48,6 @@ typedef struct {
 } vertex_t;
 
 typedef struct {
-	color_t color = { 1, 1, 0 };
-	bool bright;
-} sun_t;
-
-typedef struct {
 	color_t color;
 	float angle;
 	float speed;
@@ -62,14 +57,14 @@ typedef struct {
 
 #define NUM 3
 
-light_t light[3] =
+light_t light[4] =
 {
 	{ { 0, 0 },{ 1, 0, 0 }},
 	{ { 200, 0 },{ 0, 1, 0 }},
 	{ { -200, 0 },{ 0, 0, 1 }}
 };
 
-sun_t sun;
+light_t sun;
 
 planet_t planet[3];
 
@@ -188,7 +183,7 @@ void drawSun() {
 void drawPlanet(planet_t t, float radius) {
 	glColor3ub(t.color.r, t.color.g, t.color.b);
 	circle(radius * cos(t.angle * D2R), radius * sin(t.angle * D2R), t.radius);
-	glColor3f(1, 1, 1);
+
 	if (t.angle < 0)
 		t.angle += 360;
 }
@@ -209,11 +204,7 @@ void display() {
 	vprint(-400, 360, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
 
 	drawSun();
-	float radius = 250;
-	for (int i = 0; i < NUM; i++) {
-		drawPlanet(planet[i], radius);
-		radius += 50;
-	}
+	
 
 	// light source 
 	for (int i = 0; i < NUM; i++) {
@@ -221,7 +212,33 @@ void display() {
 		circle(light[i].pos.x, light[i].pos.y, 10);
 	}
 	
+	//planets
+	float radius = 250;
+	for (int i = 0; i < 3; i++) {
+		float angle;
+		glBegin(GL_TRIANGLE_FAN);
+		glColor3f(0.3, 0.3, 0.3);
+		glVertex2f(radius * cos(planet[i].angle * D2R), radius * sin(planet[i].angle * D2R));
+		for (int j = 0; j < 100; j++)
+		{
+			angle = 2 * PI*j / 100;
 
+			vertex_t P = { { radius * cos(planet[i].angle * D2R) + planet[i].radius*cos(angle), radius * sin(planet[i].angle * D2R) + planet[i].radius*sin(angle) },{ 0, 1 } };
+			color_t res = { 0, 0, 0 };
+			for (int k = 0; k < NUM; k++) {
+				res = addColor(res, calculateColor(light[k], P));
+			}
+			res = addColor(res, calculateColor(sun, P));
+			glColor3f(res.r, res.g, res.b);
+			glVertex2f(radius * cos(planet[i].angle * D2R) + planet[i].radius*cos(angle), radius * sin(planet[i].angle * D2R) + planet[i].radius*sin(angle));
+		}
+		radius += 50;
+		glEnd();
+	}
+	
+	glBegin(GL_TRIANGLE_FAN);
+
+	glEnd();
 
 	glutSwapBuffers();
 
@@ -232,6 +249,8 @@ void Init() {
 	// Smoothing shapes
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	sun.color = { 1, 1, 0 };
+	sun.bright = true;
 
 	light[0] = { { 0, 0 },{ 1, 0, 0 } };
 	light[1] = { { 200, 0 },{ 0, 1, 0 } };
@@ -327,10 +346,7 @@ void onSpecialKeyDown(int key, int x, int y)
 		}
 		break;
 	case GLUT_KEY_F5:
-		if (activeTimer)
-			activeTimer = false;
-		else
-			activeTimer = true;
+		activeTimer == true ? activeTimer = false : activeTimer = true;
 		break;
 	case GLUT_KEY_F6:
 		Init();
