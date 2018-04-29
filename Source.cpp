@@ -184,26 +184,25 @@ void drawPlanet(planet_t planet, float radius) {
 	float angle;
 	glBegin(GL_TRIANGLE_FAN);
 	glColor3f(0.3, 0.3, 0.3);
-	glVertex2f(radius * cos(planet.angle * D2R), radius * sin(planet.angle * D2R));
+	float x = radius * cos(planet.angle * D2R), y = radius * sin(planet.angle * D2R);
+	glVertex2f(x, y);
+
 	for (int j = 0; j <= 100; j++) {
 		angle = 2 * PI*j / 100;
 
+		vec_t v = { x + planet.radius*cos(angle), y + planet.radius*sin(angle) };
+		vertex_t P = { { v.x, v.y } };
+
+		P.N = unitV(subV({ v.x, v.y }, { x, y }));
 		
 		color_t res = { 0, 0, 0 };
-		vec_t v = { radius * cos(planet.angle * D2R) + planet.radius*cos(angle), radius * sin(planet.angle * D2R) + planet.radius*sin(angle) };
 		for (int k = 0; k < NUM; k++) {
-			vec_t L = subV(light[k].pos, v);
-			vec_t uL = unitV(L);
-			vertex_t P = { {v.x, v.y},{ uL.x, uL.y } };
 			res = addColor(res, calculateColor(light[k], P));
 		}
-		vec_t L = subV(sun.pos, v);
-		vec_t uL = unitV(L);
-		vertex_t P = { { v.x, v.y },{ uL.x, uL.y } };
 		res = addColor(res, calculateColor(sun, P));
 
 		glColor3f(res.r, res.g, res.b);
-		glVertex2f(radius * cos(planet.angle * D2R) + planet.radius*cos(angle), radius * sin(planet.angle * D2R) + planet.radius*sin(angle));
+		glVertex2f(v.x, v.y);
 	}
 	glEnd();
 
@@ -234,15 +233,12 @@ void display() {
 	}
 	
 	//planets
-	float radius = 250;
+	float radius = 150;
 	for (int i = 0; i < 3; i++) {
 		drawPlanet(planet[i], radius);
 		radius += 50;
 	}
 	
-	glBegin(GL_TRIANGLE_FAN);
-
-	glEnd();
 
 	glutSwapBuffers();
 
