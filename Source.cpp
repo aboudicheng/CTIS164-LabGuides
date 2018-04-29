@@ -55,6 +55,12 @@ typedef struct {
 	float radius;
 } planet_t;
 
+typedef struct {
+	char act[10] = "On";
+} activation_t;
+
+activation_t act[5];
+
 #define NUM 3
 
 light_t light[4] =
@@ -223,6 +229,10 @@ void display() {
 	vprint(-400, 380, GLUT_BITMAP_9_BY_15, "Homeword #4");
 	vprint(-400, 360, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
 
+	glColor3f(0, 1, 0);
+	vprint(-150, 380, GLUT_BITMAP_9_BY_15, "F1(Red): %s   F2(Green): %s   F3(Blue): %s", act[0].act, act[1].act, act[2].act);
+	vprint(-150, 360, GLUT_BITMAP_9_BY_15, "F4(Sun): %s   F5(Animation): %s   F6:Restart", act[3].act, act[4].act);
+	
 	drawSun();
 	
 
@@ -309,44 +319,60 @@ void onSpecialKeyDown(int key, int x, int y)
 		if (light[0].bright) {
 			light[0].color = { 0.3, 0.3, 0.3 };
 			light[0].bright = false;
+			strcpy(act[0].act, "Off");
 		}
 		else {
 			light[0].color = { 1, 0, 0 };
 			light[0].bright = true;
+			strcpy(act[0].act, "On");
 		}
 		break;
 	case GLUT_KEY_F2:
 		if (light[1].bright) {
 			light[1].color = { 0.3, 0.3, 0.3 };
 			light[1].bright = false;
+			strcpy(act[1].act, "Off");
 		}
 		else {
 			light[1].color = { 0, 1, 0 };
 			light[1].bright = true;
+			strcpy(act[1].act, "On");
 		}
 		break;
 	case GLUT_KEY_F3:
 		if (light[2].bright) {
 			light[2].color = { 0.3, 0.3, 0.3 };
 			light[2].bright = false;
+			strcpy(act[2].act, "Off");
 		}
 		else {
 			light[2].color = { 0, 0, 1 };
 			light[2].bright = true;
+			strcpy(act[2].act, "On");
 		}
 		break;
 	case GLUT_KEY_F4: 
 		if (sun.bright) {
 			sun.color = { 0.3, 0.3, 0.3 };
 			sun.bright = false;
+			strcpy(act[3].act, "Off");
 		}
 		else {
 			sun.color = { 1, 1, 0 };
 			sun.bright = true;
+			strcpy(act[3].act, "On");
 		}
 		break;
 	case GLUT_KEY_F5:
-		activeTimer == true ? activeTimer = false : activeTimer = true;
+		//activeTimer == true ? activeTimer = false : activeTimer = true;
+		if (activeTimer) {
+			activeTimer = false;
+			strcpy(act[4].act, "Off");
+		}
+		else {
+			activeTimer = true;
+			strcpy(act[4].act, "On");
+		}
 		break;
 	case GLUT_KEY_F6:
 		Init();
