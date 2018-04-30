@@ -8,10 +8,10 @@ HOMEWORK: 4
 PROBLEMS:
 ----------
 ADDITIONAL FEATURES:
-- Press spacebar to add light sources (maximum 20 in total)
+- Press spacebar to add light sources that will come out from the center (maximum 20 in total)
 - Use arrow keys to move the sun
-- Planet recovers HP to 100, more light sources added = more points
-- If light sources touch the sun HP decreases
+- Planet recovers HP to 100, more light sources added => more points
+- If light sources touch the sun then HP decreases
 - Naming system
 - Scoreboard using bubble sort
 *********/
@@ -68,6 +68,7 @@ typedef struct {
 	char act[10] = "On";
 } activation_t;
 
+//used for changing between "On" and "Off"
 activation_t act[5];
 
 light_t light[20] =
@@ -86,6 +87,7 @@ hp = 100,
 //total amount of gameplay
 gameplay = 0;
 
+//current gameplay's score
 double score = 0;
 
 typedef struct {
@@ -93,10 +95,13 @@ typedef struct {
 	char name[100] = "";
 } score_t;
 
+//each records the player data
 score_t s[10];
 
+//player name
 char playerN[100] = "";
 
+//used for showing popup window
 bool gg = false, showscore = false;
 
 light_t sun;
@@ -113,10 +118,6 @@ color_t addColor(color_t c1, color_t c2) {
 	return tmp;
 }
 
-// To add distance into calculation
-// when distance is 0  => its impact is 1.0
-// when distance is 350 => impact is 0.0
-// Linear impact of distance on light calculation.
 double distanceImpact(double d) {
 	return fabs((-1.0 / 350.0) * d + 1.0);
 }
@@ -210,6 +211,7 @@ void vprint2(int x, int y, float size, char *string, ...) {
 	glPopMatrix();
 }
 
+//used to test collision between light sources and sun
 bool testLightCollision(light_t source, light_t sun) {
 	float dx = sun.pos.x - source.pos.x;
 	float dy = sun.pos.y - source.pos.y;
@@ -217,11 +219,12 @@ bool testLightCollision(light_t source, light_t sun) {
 	return d <= 30;
 }
 
+//used to test collosion between planets and sun
 bool testPlanetCollision(light_t sun, planet_t t, float radius) {
 	float dx =  sun.pos.x - radius * cos(t.angle * D2R);
 	float dy =  sun.pos.y - radius * sin(t.angle * D2R);
 	float d = sqrt(dx*dx + dy*dy);
-	return d <= t.radius;
+	return d <= t.radius * 2;
 }
 
 void drawSun() {
@@ -275,6 +278,7 @@ void bubbleSort(score_t arr[], int n) {
 		bubbleSort(arr, n - 1);
 }
 
+//gameover popup window
 void GameOver() {
 	glColor3ub(154, 247, 32);
 	glRectf(-300, -200, 300, 200);
@@ -291,6 +295,7 @@ void GameOver() {
 	vprint(-110, -20, GLUT_BITMAP_HELVETICA_18, "Press <Enter> to continue");
 }
 
+//scoreboard popup window
 void scoreBoard() {
 	bubbleSort(s, gameplay);
 	glColor3ub(154, 247, 32);
@@ -354,6 +359,7 @@ void display() {
 		for (int j = 0; j < 3; j++) {
 			if (testPlanetCollision(sun, planet[j], radius)) {
 				planet[j].collision = true;
+				//recover hp
 				hp = 100;
 			}
 			radius += 50;
@@ -658,11 +664,11 @@ void onTimer(int v) {
 			light[i].pos = addV(light[i].pos, light[i].vel);
 
 			// Reflection from Walls.
-			if (light[i].pos.x > 395 || light[i].pos.x < -395) {
+			if (light[i].pos.x > (WINDOW_WIDTH / 2 - 5) || light[i].pos.x < -(WINDOW_WIDTH / 2 - 5)) {
 				light[i].vel.x *= -1;
 			}
 
-			if (light[i].pos.y > 395 || light[i].pos.y < -395) {
+			if (light[i].pos.y > (WINDOW_HEIGHT / 2 - 5) || light[i].pos.y < -(WINDOW_HEIGHT / 2 - 5)) {
 				light[i].vel.y *= -1;
 			}
 		}
