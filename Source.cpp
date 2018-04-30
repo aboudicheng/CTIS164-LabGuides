@@ -655,10 +655,10 @@ void onTimer(int v) {
 	// Write your codes here.
 
 	if (activeTimer) {
-		if (up) sun.pos.y += 10;
-		if (down) sun.pos.y -= 10;
-		if (left) sun.pos.x -= 10;
-		if (right) sun.pos.x += 10;
+		if (up && sun.pos.y < 370) sun.pos.y += 10;
+		if (down && sun.pos.y > -370) sun.pos.y -= 10;
+		if (left && sun.pos.x > -370) sun.pos.x -= 10;
+		if (right && sun.pos.x < 370) sun.pos.x += 10;
 
 		for (int i = 0; i < num; i++) {
 			light[i].pos = addV(light[i].pos, light[i].vel);
