@@ -12,6 +12,8 @@ ADDITIONAL FEATURES:
 - Use arrow keys to move the sun
 - Planet recovers HP to 100, more light sources added = more points
 - If light sources touch the sun HP decreases
+- Naming system
+- Scoreboard using bubble sort
 *********/
 
 #include <GL/glut.h>
@@ -76,13 +78,26 @@ light_t light[20] =
 };
 
 //# of sources
-int num = 3, 
-	//used to multiply score
-	factor = 1,
-	//health point set to 100
-	hp = 100;
+int num = 3,
+//used to multiply score
+factor = 1,
+//health point set to 100
+hp = 100,
+//total amount of gameplay
+gameplay = 0;
 
 double score = 0;
+
+typedef struct {
+	double score;
+	char name[100] = "";
+} score_t;
+
+score_t s[10];
+
+char playerN[100] = "";
+
+bool gg = false, showscore = false;
 
 light_t sun;
 
@@ -242,6 +257,59 @@ void drawPlanet(planet_t planet, float radius) {
 
 }
 
+void swap(score_t *x, score_t *y) {
+	score_t temp = *x;
+	*x = *y;
+	*y = temp;
+}
+
+void bubbleSort(score_t arr[], int n) {
+	bool sort = true;
+	for (int i = 0; i < n - 1; i++)
+		if (arr[i].score < arr[i + 1].score) {
+			swap(&arr[i], &arr[i + 1]);
+			sort = false;
+		}
+
+	if (!sort)
+		bubbleSort(arr, n - 1);
+}
+
+void GameOver() {
+	glColor3ub(154, 247, 32);
+	glRectf(-300, -200, 300, 200);
+
+	glColor3ub(89, 32, 247);
+	vprint(-70, 120, GLUT_BITMAP_TIMES_ROMAN_24, "GAME OVER");
+
+	glColor3f(1, 1, 1);
+	glRectf(-120, 40, 120, 60);
+
+	glColor3ub(255, 131, 0);
+	vprint(-120, 0, GLUT_BITMAP_HELVETICA_18, "Please type down your name");
+	vprint(-115, 45, GLUT_BITMAP_HELVETICA_18, "%s", playerN);
+	vprint(-110, -20, GLUT_BITMAP_HELVETICA_18, "Press <Enter> to continue");
+}
+
+void scoreBoard() {
+	bubbleSort(s, gameplay);
+	glColor3ub(154, 247, 32);
+	glRectf(-300, -200, 300, 200);
+
+	glColor3f(1, 0, 0);
+	vprint(-290, 180, GLUT_BITMAP_9_BY_15, "Press F6 to Restart");
+
+	glColor3ub(89, 32, 247);
+	vprint(-70, 120, GLUT_BITMAP_TIMES_ROMAN_24, "SCOREBOARD");
+
+	for (int i = 0; i < gameplay; i++) {
+		if (i < 5)
+			vprint(-200, 50 - i * 50, GLUT_BITMAP_TIMES_ROMAN_24, "%d: %s (%.0f)", i + 1, s[i].name, s[i].score);
+		else
+			vprint(50, 50 - i * 50 + 250, GLUT_BITMAP_TIMES_ROMAN_24, "%d: %s (%.0f)", i + 1, s[i].name, s[i].score);
+	}
+}
+
 //
 // To display onto window using OpenGL commands
 //
@@ -279,7 +347,7 @@ void display() {
 		circle(light[i].pos.x, light[i].pos.y, 10);
 		
 		//test light collision
-		if (testLightCollision(light[i], sun) && hp > 0) {
+		if (testLightCollision(light[i], sun) && activeTimer && hp > 0) {
 			hp -= 1;
 		}
 		float radius = 150;
@@ -300,8 +368,15 @@ void display() {
 		radius += 50;
 	}
 
-	if (hp == 0)
+	if (hp == 0 && !gg && !showscore) {
 		activeTimer = false;
+		gg = true;
+	}
+	
+	if (gg && !showscore)
+		GameOver();
+	else if (showscore && !gg)
+		scoreBoard();
 
 	glutSwapBuffers();
 
@@ -317,6 +392,9 @@ void Init() {
 	score = 0;
 	factor = 1;
 	activeTimer = true;
+	showscore = gg = false;
+
+	strcpy(playerN, "");
 
 	//sun
 	sun.color = { 1, 1, 0 };
@@ -349,6 +427,13 @@ void Init() {
 
 }
 
+void append(char* s, char c)
+{
+	int len = strlen(s);
+	s[len] = c;
+	s[len + 1] = '\0';
+}
+
 //
 // key function for ASCII charachters like ESC, a,b,c..,A,B,..Z
 //
@@ -357,7 +442,7 @@ void onKeyDown(unsigned char key, int x, int y)
 	// exit when ESC is pressed.
 	if (key == 27)
 		exit(0);
-	if (key == ' ' && num < 20) {
+	if (key == ' ' && num < 20 && activeTimer) {
 
 		float r = ((float)rand() / (float)(RAND_MAX)) * 1;
 		float g = ((float)rand() / (float)(RAND_MAX)) * 1;
@@ -368,6 +453,25 @@ void onKeyDown(unsigned char key, int x, int y)
 		num++;
 		factor += 5;
 	}
+
+	if (gg) {
+		if (key == 13 && strlen(playerN) > 1) {
+			strcpy(s[gameplay].name, playerN);
+			s[gameplay].score = score;
+			gameplay++;
+			gg = false;
+			showscore = true;
+		}
+		else {
+			//type
+			if (strlen(playerN) < 20)
+				append(playerN, key);
+			//delete
+			if (key == 8 && strlen(playerN) > 1)
+				playerN[strlen(playerN) - 2] = '\0';
+		}
+	}
+
 
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
