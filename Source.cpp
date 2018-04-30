@@ -5,8 +5,13 @@ STUDENT : Ping Cheng
 SECTION : 2
 HOMEWORK: 4
 ----------
-PROBLEMS: If your program does not function correctly,
-explain here which parts are not running.
+PROBLEMS:
+----------
+ADDITIONAL FEATURES:
+- Press spacebar to add light sources (maximum 20 in total)
+- Use arrow keys to move the sun
+- Planet recovers HP to 100, more light sources added = more points
+- If light sources touch the sun HP decreases
 *********/
 
 #include <GL/glut.h>
@@ -40,6 +45,7 @@ typedef struct {
 	color_t color;
 	vec_t   vel;
 	bool bright;
+	bool hit;
 } light_t;
 
 typedef struct {
@@ -53,6 +59,7 @@ typedef struct {
 	float speed;
 	bool direction;
 	float radius;
+	bool collision;
 } planet_t;
 
 typedef struct {
@@ -61,14 +68,21 @@ typedef struct {
 
 activation_t act[5];
 
-#define NUM 3
-
-light_t light[4] =
+light_t light[20] =
 {
-	{ { 0, 0 },{ 1, 0, 0 }},
-	{ { 200, 0 },{ 0, 1, 0 }},
-	{ { -200, 0 },{ 0, 0, 1 }}
+	{ { 0, 0 },{ 1, 0, 0 } },
+	{ { 200, 0 },{ 0, 1, 0 } },
+	{ { -200, 0 },{ 0, 0, 1 } }
 };
+
+//# of sources
+int num = 3, 
+	//used to multiply score
+	factor = 1,
+	//health point set to 100
+	hp = 100;
+
+double score = 0;
 
 light_t sun;
 
@@ -89,7 +103,7 @@ color_t addColor(color_t c1, color_t c2) {
 // when distance is 350 => impact is 0.0
 // Linear impact of distance on light calculation.
 double distanceImpact(double d) {
-	return (-1.0 / 350.0) * d + 1.0;
+	return fabs((-1.0 / 350.0) * d + 1.0);
 }
 
 color_t calculateColor(light_t source, vertex_t v) {
@@ -99,10 +113,10 @@ color_t calculateColor(light_t source, vertex_t v) {
 	return mulColor(factor, source.color);
 }
 
-						  //
-						  // to draw circle, center at (x,y)
-						  // radius r
-						  //
+//
+// to draw circle, center at (x,y)
+// radius r
+//
 void circle(int x, int y, int r)
 {
 #define PI 3.1415
@@ -181,9 +195,23 @@ void vprint2(int x, int y, float size, char *string, ...) {
 	glPopMatrix();
 }
 
+bool testLightCollision(light_t source, light_t sun) {
+	float dx = sun.pos.x - source.pos.x;
+	float dy = sun.pos.y - source.pos.y;
+	float d = sqrt(dx*dx + dy*dy);
+	return d <= 30;
+}
+
+bool testPlanetCollision(light_t sun, planet_t t, float radius) {
+	float dx =  sun.pos.x - radius * cos(t.angle * D2R);
+	float dy =  sun.pos.y - radius * sin(t.angle * D2R);
+	float d = sqrt(dx*dx + dy*dy);
+	return d <= t.radius;
+}
+
 void drawSun() {
 	glColor3f(sun.color.r, sun.color.g, sun.color.b);
-	circle(0, 0, 30);
+	circle(sun.pos.x, sun.pos.y, 30);
 }
 
 void drawPlanet(planet_t planet, float radius) {
@@ -200,9 +228,9 @@ void drawPlanet(planet_t planet, float radius) {
 		vertex_t P = { { v.x, v.y } };
 
 		P.N = unitV(subV({ v.x, v.y }, { x, y }));
-		
+
 		color_t res = { 0, 0, 0 };
-		for (int k = 0; k < NUM; k++) {
+		for (int k = 0; k < num; k++) {
 			res = addColor(res, calculateColor(light[k], P));
 		}
 		res = addColor(res, calculateColor(sun, P));
@@ -226,29 +254,54 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glColor3f(1, 1, 1);
-	vprint(-400, 380, GLUT_BITMAP_9_BY_15, "Homeword #4");
+	vprint(-400, 380, GLUT_BITMAP_9_BY_15, "Homework #4");
 	vprint(-400, 360, GLUT_BITMAP_9_BY_15, "by Ping Cheng");
 
 	glColor3f(0, 1, 0);
 	vprint(-150, 380, GLUT_BITMAP_9_BY_15, "F1(Red): %s   F2(Green): %s   F3(Blue): %s", act[0].act, act[1].act, act[2].act);
 	vprint(-150, 360, GLUT_BITMAP_9_BY_15, "F4(Sun): %s   F5(Animation): %s   F6:Restart", act[3].act, act[4].act);
+	vprint(-400, 340, GLUT_BITMAP_9_BY_15, "# of light sources: %d", num);
 	
+	vprint(-400, 310, GLUT_BITMAP_9_BY_15, "HP:");
+	glColor3f(1, 0, 0);
+	glRectf(-350, 310, -350 + hp * 1.2, 320);
+	vprint(-200, 310, GLUT_BITMAP_9_BY_15, "%d%%", hp);
+
+	glColor3f(1, 1, 0);
+	vprint(-400, 280, GLUT_BITMAP_9_BY_15, "Score: %.0f", score);
+
 	drawSun();
-	
+
 
 	// light source 
-	for (int i = 0; i < NUM; i++) {
+	for (int i = 0; i < num; i++) {
 		glColor3f(light[i].color.r, light[i].color.g, light[i].color.b);
 		circle(light[i].pos.x, light[i].pos.y, 10);
+		
+		//test light collision
+		if (testLightCollision(light[i], sun) && hp > 0) {
+			hp -= 1;
+		}
+		float radius = 150;
+		for (int j = 0; j < 3; j++) {
+			if (testPlanetCollision(sun, planet[j], radius)) {
+				planet[j].collision = true;
+				hp = 100;
+			}
+			radius += 50;
+		}
 	}
-	
+
 	//planets
 	float radius = 150;
 	for (int i = 0; i < 3; i++) {
-		drawPlanet(planet[i], radius);
+		if (!planet[i].collision)
+			drawPlanet(planet[i], radius);
 		radius += 50;
 	}
-	
+
+	if (hp == 0)
+		activeTimer = false;
 
 	glutSwapBuffers();
 
@@ -259,25 +312,41 @@ void Init() {
 	// Smoothing shapes
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	hp = 100;
+	score = 0;
+	factor = 1;
+	activeTimer = true;
+
+	//sun
 	sun.color = { 1, 1, 0 };
 	sun.bright = true;
+	sun.pos = { 0, 0 };
 
-	light[0] = { { 0, 0 },{ 1, 0, 0 } };
+	//# of light sources default
+	num = 3;
+
+	//light sources
+	light[0] = { { 0, 200 },{ 1, 0, 0 } };
 	light[1] = { { 200, 0 },{ 0, 1, 0 } };
 	light[2] = { { -200, 0 },{ 0, 0, 1 } };
 
-	for (int i = 0; i < NUM; i++) {
+	for (int i = 0; i < num; i++) {
 		light[i].vel = { (double)(rand() % 21) - 10 , (double)(rand() % 21) - 10 };
 		light[i].bright = true;
 	}
 
+	//planets
 	for (int i = 0; i < 3; i++) {
 		planet[i].color = { 150 , 150 , 150 };
 		planet[i].direction = rand() & 1;
 		planet[i].angle = rand() % 361;
 		planet[i].speed = rand() % 2 + 1;
 		planet[i].radius = rand() % 6 + 20;
+		planet[i].collision = false;
 	}
+
+
 }
 
 //
@@ -288,6 +357,17 @@ void onKeyDown(unsigned char key, int x, int y)
 	// exit when ESC is pressed.
 	if (key == 27)
 		exit(0);
+	if (key == ' ' && num < 20) {
+
+		float r = ((float)rand() / (float)(RAND_MAX)) * 1;
+		float g = ((float)rand() / (float)(RAND_MAX)) * 1;
+		float b = ((float)rand() / (float)(RAND_MAX)) * 1;
+		light[num] = { { 0, 0 },{ r, g, b } };
+		light[num].vel = { (double)(rand() % 21) - 10 , (double)(rand() % 21) - 10 };
+		light[num].bright = true;
+		num++;
+		factor += 5;
+	}
 
 	// to refresh the window it calls display() function
 	glutPostRedisplay();
@@ -351,7 +431,7 @@ void onSpecialKeyDown(int key, int x, int y)
 			strcpy(act[2].act, "On");
 		}
 		break;
-	case GLUT_KEY_F4: 
+	case GLUT_KEY_F4:
 		if (sun.bright) {
 			sun.color = { 0.3, 0.3, 0.3 };
 			sun.bright = false;
@@ -377,6 +457,7 @@ void onSpecialKeyDown(int key, int x, int y)
 	case GLUT_KEY_F6:
 		Init();
 		break;
+
 	}
 
 	// to refresh the window it calls display() function
@@ -464,7 +545,12 @@ void onTimer(int v) {
 	// Write your codes here.
 
 	if (activeTimer) {
-		for (int i = 0; i < NUM; i++) {
+		if (up) sun.pos.y += 10;
+		if (down) sun.pos.y -= 10;
+		if (left) sun.pos.x -= 10;
+		if (right) sun.pos.x += 10;
+
+		for (int i = 0; i < num; i++) {
 			light[i].pos = addV(light[i].pos, light[i].vel);
 
 			// Reflection from Walls.
@@ -478,17 +564,24 @@ void onTimer(int v) {
 		}
 
 		for (int i = 0; i < 3; i++) {
-			//clockwise or counter clockwise
-			if (planet[i].direction)
-				planet[i].angle += planet[i].speed;
-			else
-				planet[i].angle -= planet[i].speed;
+			if (!planet[i].collision) {
+				//clockwise or counter clockwise
+				if (planet[i].direction)
+					planet[i].angle += planet[i].speed;
+				else
+					planet[i].angle -= planet[i].speed;
 
-			if (planet[i].angle > 360)
-				planet[i].angle -= 360;
-			else if (planet[i].angle < -360)
-				planet[i].angle += 360;
+				if (planet[i].angle > 360)
+					planet[i].angle -= 360;
+				else if (planet[i].angle < -360)
+					planet[i].angle += 360;
+			}
+			else {
+				planet[i].radius = -1;
+			}
 		}
+
+		score += 0.5 * factor;
 	}
 
 	// to refresh the window it calls display() function
